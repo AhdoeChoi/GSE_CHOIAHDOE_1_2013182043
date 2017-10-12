@@ -13,17 +13,33 @@ but WITHOUT ANY WARRANTY.
 #include "Dependencies\glew.h"
 #include "Dependencies\freeglut.h"
 
+#include "Object.h"
 #include "Renderer.h"
+#include <iostream>
+
+using namespace std;
+
 
 Renderer *g_Renderer = NULL;
+Object * pObject = NULL;
 
 void RenderScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
 
+
 	// Renderer Test
-	g_Renderer->DrawSolidRect(0, 0, 0, 4, 1, 0, 1, 1);
+	if (pObject)
+	{
+		g_Renderer->DrawSolidRect(pObject->GetPosition().x/*xÁÂÇ¥*/, pObject->GetPosition().y/*yÁÂÇ¥*/, pObject->GetPosition().z/*zÁÂÇ¥*/, 100/*Å©±â*/, 0/*red*/, 100/*green*/, 51/*blue*/, 1/*alpha*/);
+
+	}
+	//g_Renderer->DrawSolidRect(pObject->GetPosition().x + (pObject->GetPosition().x + pObject->GetVelocity().x),
+	//	pObject->GetPosition().y + (pObject->GetPosition().y + pObject->GetVelocity().y),
+	//	pObject->GetPosition().z + (pObject->GetPosition().z + pObject->GetVelocity().z),
+	//	100, 0, 100, 51, 1);
+
 
 	glutSwapBuffers();
 }
@@ -35,6 +51,13 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	{
+
+		pObject->SetPosition(x - 300, -y + 300, 0);
+		cout << x << "\t" << y << endl;
+	}
+
 	RenderScene();
 }
 
@@ -46,15 +69,31 @@ void KeyInput(unsigned char key, int x, int y)
 void SpecialKeyInput(int key, int x, int y)
 {
 	RenderScene();
+
+
 }
+
+void Update(int value)
+{
+
+
+
+	pObject->Update();
+	glutTimerFunc(100, Update, 1);
+
+
+}
+
 
 int main(int argc, char **argv)
 {
+	pObject = new Object;
+
 	// Initialize GL things
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(500, 500);
+	glutInitWindowSize(600, 600);
 	glutCreateWindow("Game Software Engineering KPU");
 
 	glewInit();
@@ -79,11 +118,12 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(KeyInput);
 	glutMouseFunc(MouseInput);
 	glutSpecialFunc(SpecialKeyInput);
+	glutTimerFunc(100, Update, 1);
 
 	glutMainLoop();
 
 	delete g_Renderer;
-
-    return 0;
+	delete pObject;
+	return 0;
 }
 

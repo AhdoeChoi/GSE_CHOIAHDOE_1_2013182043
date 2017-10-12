@@ -4,3 +4,5 @@
 
 #include <stdio.h>
 #include <tchar.h>
+
+#define PLAYERVELOCITY 3
