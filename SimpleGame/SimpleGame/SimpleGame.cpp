@@ -13,33 +13,25 @@ but WITHOUT ANY WARRANTY.
 #include "Dependencies\glew.h"
 #include "Dependencies\freeglut.h"
 
-#include "Object.h"
+#include "Scene.h"
 #include "Renderer.h"
-#include <iostream>
-
-using namespace std;
 
 
-Renderer *g_Renderer = NULL;
-Object * pObject = NULL;
+
+//Object * pObject = NULL;
+
+Scene * pScene = NULL;
 
 void RenderScene(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
 
-
 	// Renderer Test
-	if (pObject)
+	if (pScene)
 	{
-		g_Renderer->DrawSolidRect(pObject->GetPosition().x/*xÁÂÇ¥*/, pObject->GetPosition().y/*yÁÂÇ¥*/, pObject->GetPosition().z/*zÁÂÇ¥*/, 100/*Å©±â*/, 0/*red*/, 100/*green*/, 51/*blue*/, 1/*alpha*/);
-
+		pScene->Render();
 	}
-	//g_Renderer->DrawSolidRect(pObject->GetPosition().x + (pObject->GetPosition().x + pObject->GetVelocity().x),
-	//	pObject->GetPosition().y + (pObject->GetPosition().y + pObject->GetVelocity().y),
-	//	pObject->GetPosition().z + (pObject->GetPosition().z + pObject->GetVelocity().z),
-	//	100, 0, 100, 51, 1);
-
 
 	glutSwapBuffers();
 }
@@ -54,7 +46,7 @@ void MouseInput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 
-		pObject->SetPosition(x - 300, -y + 300, 0);
+		pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
 		cout << x << "\t" << y << endl;
 	}
 
@@ -76,18 +68,17 @@ void SpecialKeyInput(int key, int x, int y)
 void Update(int value)
 {
 
+	pScene->Update();
 
-
-	pObject->Update();
 	glutTimerFunc(100, Update, 1);
-
 
 }
 
 
 int main(int argc, char **argv)
 {
-	pObject = new Object;
+	//pObject = new Object[MAX_OBJECTS_COUNT];
+
 
 	// Initialize GL things
 	glutInit(&argc, argv);
@@ -106,12 +97,8 @@ int main(int argc, char **argv)
 		std::cout << "GLEW 3.0 not supported\n ";
 	}
 
-	// Initialize Renderer
-	g_Renderer = new Renderer(500, 500);
-	if (!g_Renderer->IsInitialized())
-	{
-		std::cout << "Renderer could not be initialized.. \n";
-	}
+	pScene = new Scene;
+
 
 	glutDisplayFunc(RenderScene);
 	glutIdleFunc(Idle);
@@ -122,8 +109,7 @@ int main(int argc, char **argv)
 
 	glutMainLoop();
 
-	delete g_Renderer;
-	delete pObject;
+	delete pScene;
 	return 0;
 }
 

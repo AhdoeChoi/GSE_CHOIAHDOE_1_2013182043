@@ -32,9 +32,14 @@ public:
 	FLOAT3 GetVelocity() { return m_f3Velocity; }
 
 	void SetPosition(FLOAT3 position) { m_f3Position = position; }
-	void SetPosition(int x, int y, int z) { m_f3Position.x = x, m_f3Position.y = y, m_f3Position.z = z; }
+	void SetPosition(float x, float y, float z) { m_f3Position.x = x, m_f3Position.y = y, m_f3Position.z = z; }
 
-
+	void SetDirection(FLOAT3 velocity) { m_f3Velocity = velocity; }
+	void SetDirection(float x, float y, float z) { m_f3Velocity.x = x, m_f3Velocity.y = y, m_f3Velocity.z = z; }
 	void Update();
+
+public:
+
+
 };
 
