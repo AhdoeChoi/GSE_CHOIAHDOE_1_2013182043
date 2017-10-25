@@ -18,7 +18,7 @@ public:
 	void Animate();
 	void Release();
 	bool IsCollide(Object* pObject1, Object * pObject2);
-	//FLOAT3 Reflect(FLOAT3 direction, FLOAT3 normal);
+	FLOAT3 Reflect(FLOAT3 direction, FLOAT3 normal);
 public:
 	Scene();
 	~Scene();

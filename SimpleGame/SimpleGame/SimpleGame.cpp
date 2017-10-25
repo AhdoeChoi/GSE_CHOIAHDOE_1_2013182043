@@ -46,7 +46,7 @@ void MouseInput(int button, int state, int x, int y)
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
 
-		pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
+	   pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
 		cout << x << "\t" << y << endl;
 	}
 

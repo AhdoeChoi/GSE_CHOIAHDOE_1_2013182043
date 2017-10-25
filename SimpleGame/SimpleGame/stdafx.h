@@ -43,7 +43,7 @@ typedef struct float4_color
 
 namespace Vector3
 {
-	FLOAT3 Normalize(FLOAT3& vector)
+	inline FLOAT3 Normalize(FLOAT3& vector)
 	{
 		FLOAT3 vResult;
 		vResult.x = vector.x / sqrt(vector.x * vector.x + vector.y * vector.y + vector.z * vector.z);
@@ -52,7 +52,7 @@ namespace Vector3
 
 		return vResult;
 	}
-	FLOAT3 Add(FLOAT3& vector1, FLOAT3& vector2)
+	inline FLOAT3 Add(FLOAT3& vector1, FLOAT3& vector2)
 	{
 		FLOAT3 vResult;
 		vResult.x = vector1.x + vector2.x;
@@ -61,7 +61,7 @@ namespace Vector3
 
 		return vResult;
 	}
-	FLOAT3 Multiple(FLOAT3& vector1, FLOAT3& vector2)
+	inline FLOAT3 Multiple(FLOAT3& vector1, FLOAT3& vector2)
 	{
 		FLOAT3 vResult;
 		vResult.x = vector1.x * vector2.x;
@@ -70,7 +70,7 @@ namespace Vector3
 
 		return vResult;
 	}
-	FLOAT3 Multiple(FLOAT3& vector1, float value)
+	inline FLOAT3 Multiple(FLOAT3& vector1, float value)
 	{
 		FLOAT3 vResult;
 		vResult.x = vector1.x * value;
@@ -79,7 +79,7 @@ namespace Vector3
 
 		return vResult;
 	}
-	float DotProduct(FLOAT3& vector1, FLOAT3& vector2)
+	inline float DotProduct(FLOAT3& vector1, FLOAT3& vector2)
 	{
 		return vector1.x * vector2.x + vector1.y * vector2.y + vector1.z * vector2.z;
 	}

@@ -25,10 +25,13 @@ Object::~Object()
 
 void Object::Update()
 {
-	m_f3Position.x += m_f3Direction.x;
-	m_f3Position.y += m_f3Direction.y;
-	m_f3Position.z += m_f3Direction.z;
-
+	//m_f3Position.x += 1 * m_f3Direction.x;
+	//m_f3Position.y += 1 * m_f3Direction.y;
+	//m_f3Position.z += 1 * m_f3Direction.z;
+	
+	m_f3Position.x +=  8 * Vector3::Normalize(m_f3Direction).x;
+	m_f3Position.y += 8 * Vector3::Normalize(m_f3Direction).y;
+	m_f3Position.z += 8 * Vector3::Normalize(m_f3Direction).z;
 
 
 
