@@ -105,10 +105,11 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(KeyInput);
 	glutMouseFunc(MouseInput);
 	glutSpecialFunc(SpecialKeyInput);
-	glutTimerFunc(100, Update, 1);
+	glutTimerFunc(10, Update, 1);
 
 	glutMainLoop();
 
+	pScene->Release();
 	delete pScene;
 	return 0;
 }
