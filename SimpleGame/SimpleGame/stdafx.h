@@ -7,7 +7,7 @@
 #include <iostream>
 #include <random>
 #include <time.h>
-
+#include <Windows.h>
 using namespace std;
 
 #define PLAYERVELOCITY 3

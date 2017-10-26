@@ -8,12 +8,14 @@ class Scene
 {
 private:
 	float m_fObjectSize;
+	int m_iColorTimer;
+	bool m_bColorChange[MAX_OBJECTS_COUNT];
 public:
 	Object * m_pObjects = NULL;
 	Renderer *g_Renderer = NULL;
-
+	
 public:
-	void Update();
+	void Update(DWORD elapsedTime);
 	void Render();
 	void Animate();
 	void Release();

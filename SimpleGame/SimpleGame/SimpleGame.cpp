@@ -21,17 +21,29 @@ but WITHOUT ANY WARRANTY.
 //Object * pObject = NULL;
 
 Scene * pScene = NULL;
+DWORD CurrentTime;
 
 void RenderScene(void)
 {
+
+	DWORD currTime = timeGetTime();
+	DWORD elapsedTime = currTime - CurrentTime; //한프레임 그리는데 걸리는 시간임
+
+	CurrentTime = currTime;
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glClearColor(0.0f, 0.3f, 0.3f, 1.0f);
-
 	// Renderer Test
 	if (pScene)
 	{
-		pScene->Render();
+	
+		pScene->Render(); // 렌더하고
+
+		pScene->Update(elapsedTime);
+
+
 	}
+	
+
 
 	glutSwapBuffers();
 }
@@ -65,14 +77,6 @@ void SpecialKeyInput(int key, int x, int y)
 
 }
 
-void Update(int value)
-{
-
-	pScene->Update();
-
-	glutTimerFunc(100, Update, 1);
-
-}
 
 
 int main(int argc, char **argv)
@@ -105,7 +109,8 @@ int main(int argc, char **argv)
 	glutKeyboardFunc(KeyInput);
 	glutMouseFunc(MouseInput);
 	glutSpecialFunc(SpecialKeyInput);
-	glutTimerFunc(10, Update, 1);
+
+	CurrentTime = timeGetTime();
 
 	glutMainLoop();
 

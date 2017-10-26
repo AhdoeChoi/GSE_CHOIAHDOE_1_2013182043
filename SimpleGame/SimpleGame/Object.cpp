@@ -16,6 +16,7 @@ Object::Object()
 	m_f4Color.b = 1.0f;
 	m_f4Color.a = 1.0f;
 
+	m_iLife = 5;
 }
 
 
@@ -23,16 +24,15 @@ Object::~Object()
 {
 }
 
-void Object::Update()
+void Object::Update(DWORD elapsedTime)
 {
 	//m_f3Position.x += 1 * m_f3Direction.x;
 	//m_f3Position.y += 1 * m_f3Direction.y;
 	//m_f3Position.z += 1 * m_f3Direction.z;
 	
-	m_f3Position.x +=  8 * Vector3::Normalize(m_f3Direction).x;
-	m_f3Position.y += 8 * Vector3::Normalize(m_f3Direction).y;
-	m_f3Position.z += 8 * Vector3::Normalize(m_f3Direction).z;
-
+	m_f3Position.x += elapsedTime * (m_f3Direction).x;
+	m_f3Position.y += elapsedTime * (m_f3Direction).y;
+	m_f3Position.z += elapsedTime * (m_f3Direction).z;
 
 
 

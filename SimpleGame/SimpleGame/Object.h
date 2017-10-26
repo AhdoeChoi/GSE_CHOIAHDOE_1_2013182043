@@ -9,6 +9,7 @@ private:
 
 	FLOAT3 m_f3Direction;
 	
+	int m_iLife;
 public:
 	Object();
 	~Object();
@@ -25,8 +26,9 @@ public:
 	void SetDirection(FLOAT3 direction) { m_f3Direction = direction; }
 	void SetDirection(float x, float y, float z) { m_f3Direction.x = x, m_f3Direction.y = y, m_f3Direction.z = z; }
 
-
-	void Update();
+	void IncreaseLife(int life) { m_iLife += life; }
+	int GetLife() { return m_iLife; }
+	void Update(DWORD elapsedTime);
 
 public:
 
