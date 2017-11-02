@@ -17,6 +17,7 @@ Object::Object()
 	m_f4Color.a = 1.0f;
 
 	m_iLife = 5;
+	m_iObjectType = -1;
 }
 
 
@@ -35,5 +36,45 @@ void Object::Update(DWORD elapsedTime)
 	m_f3Position.z += elapsedTime * (m_f3Direction).z;
 
 
+
+}
+Enemy::Enemy()
+{
+
+}
+Enemy::~Enemy()
+{
+
+}
+Ally::Ally()
+{
+
+}
+Ally::~Ally()
+{
+
+}
+Building::Building()
+{
+
+}
+Building::~Building()
+{
+
+}
+Bullet::Bullet()
+{
+
+}
+Bullet::~Bullet()
+{
+
+}
+Arrow::Arrow()
+{
+
+}
+Arrow::~Arrow()
+{
 
 }

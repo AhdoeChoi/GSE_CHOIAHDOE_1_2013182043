@@ -12,6 +12,21 @@ using namespace std;
 
 #define PLAYERVELOCITY 3
 #define MAX_OBJECTS_COUNT 50
+#define MAX_BUILDING_COUNT 50
+
+
+//enum
+//{
+//	OBJECT_BUILDING = 0,
+//	OBJECT_CHARACTER = 1,
+//	OBJECT_BULLET = 2,
+//	OBJECT_ARROW = 3
+//}OBJECTTYPE;
+
+#define OBJECT_BUILDING 0
+#define	OBJECT_CHARACTER  1
+#define	OBJECT_BULLET  2
+#define	OBJECT_ARROW 3
 
 
 typedef struct float3
