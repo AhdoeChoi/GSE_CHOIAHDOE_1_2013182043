@@ -25,7 +25,7 @@ Scene::Scene()
 	m_iCollideCnt = 0;
 
 	m_bCollideState = false;
-
+	m_bCollideState_Bullet = false;
 }
 
 Scene::~Scene()
@@ -38,25 +38,6 @@ void Scene::BuildObject()
 {
 	m_pObjects = new Object[MAX_OBJECTS_COUNT];
 
-	//default_random_engine dre;
-	//uniform_real_distribution<> urPosition(-225.f, 225.f);
-	//uniform_real_distribution<> urMovingDirect(0.0, 0.155f);
-	//dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
-
-	//for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
-	//{
-	//	float ur_x = urPosition(dre);
-	//	float ur_y = urPosition(dre);
-	//	FLOAT3 ur_center;
-	//	ur_center.x = ur_x;
-	//	ur_center.y = ur_y;
-	//	ur_center.z = 0;
-
-	//	m_pObjects[i].SetPosition(ur_x, ur_y, 0);
-	//	m_pObjects[i].SetDirection(urMovingDirect(dre), urMovingDirect(dre), 0);
-	//	//m_pObjects[i].SetOOBB(ur_center,m_fObjectSize);
-
-	//}
 	AddActorObject(0,0, OBJECT_BUILDING);
 }
 
@@ -184,18 +165,6 @@ void Scene::ColideDetection()
 
 					//cout << m_iCollideCnt << endl;
 
-					m_pObjects[i].IncreaseLife(-1);
-					m_pObjects[j].IncreaseLife(-1);
-
-					if (m_pObjects[i].GetLife() < 0)
-					{
-						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-					}
-					if (m_pObjects[j].GetLife() < 0)
-					{
-						m_pObjects[j].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
-
-					}
 					m_bCollideState = true;
 				}
 				else
@@ -213,9 +182,67 @@ void Scene::ColideDetection()
 		{
 			if (IsCollide(&m_pObjects[i], &m_pBuilding[j], m_fBuildingSize))
 			{
+
 				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 				m_pBuilding[j].DamageAnimate();
+				m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
 
+				if (m_pBuilding[j].GetLife() < 0)
+				{
+					m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < m_nObjects; ++i) //총알과 오브젝트 충돌
+	{
+		for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+		{
+			float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+
+			if (Distance < m_fObjectSize)
+			{
+				if (m_bCollideState_Bullet == false)
+				{
+					//cout << m_pObjects[0].GetLife() << endl;
+
+					FLOAT3 swapDirection;
+					swapDirection.x = m_pObjects[i].GetDirection().x;
+					swapDirection.y = m_pObjects[i].GetDirection().y;
+					swapDirection.z = m_pObjects[i].GetDirection().z;
+
+					m_pObjects[i].SetDirection((*iter)->GetDirection());
+					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
+
+				
+					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+
+					//++m_iCollideCnt;
+
+					//cout << m_iCollideCnt << endl;
+
+					m_pObjects[i].IncreaseLife(-BULLET_LIFE);
+				
+
+					if (m_pObjects[i].GetLife() < 0)
+					{
+						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					}
+					
+					m_bCollideState_Bullet = true;
+					m_pBuilding->m_listBullet.erase(iter);
+
+				}
+				else
+				{
+					m_bCollideState_Bullet = false;
+
+				}
 			}
 		}
 	}
@@ -308,6 +335,7 @@ void Scene::AddActorObject(float x, float y, int objectType)
 		{
 			m_pBuilding[m_nBuilding].SetPosition(x, y, 0);
 			m_pBuilding[m_nBuilding].SetColor(1, 1, 0, 1);
+			m_pBuilding[m_nBuilding].SetLife(BUILDING_LIFE);
 			m_nBuilding++;
 
 		}
@@ -324,6 +352,7 @@ void Scene::AddActorObject(float x, float y, int objectType)
 
 		m_pObjects[m_nObjects].SetPosition(x, y, 0);
 		m_pObjects[m_nObjects].SetDirection(urmovingdirect(dre), urmovingdirect(dre), 0);
+		m_pObjects[m_nObjects].SetLife(CHARACTER_LIFE);
 		//m_pObjects[m_nObjects].SetLifeTime(clock());
 
 		if (m_nObjects < MAX_OBJECTS_COUNT)

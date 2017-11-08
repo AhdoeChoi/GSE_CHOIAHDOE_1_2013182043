@@ -22,6 +22,7 @@ private:
 
 	bool m_bBuild;
 	bool m_bCollideState;
+	bool m_bCollideState_Bullet;
 
 public:
 	

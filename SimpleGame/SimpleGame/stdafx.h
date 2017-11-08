@@ -15,7 +15,9 @@ using namespace std;
 #define MAX_OBJECTS_COUNT 10
 #define MAX_BUILDING_COUNT 1
 #define OBJECT_DELETE_TIME 20
-
+#define BULLET_LIFE 20
+#define CHARACTER_LIFE 10
+#define BUILDING_LIFE 40
 //enum
 //{
 //	OBJECT_BUILDING = 0,

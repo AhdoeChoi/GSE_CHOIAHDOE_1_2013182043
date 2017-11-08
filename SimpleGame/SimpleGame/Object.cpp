@@ -33,7 +33,6 @@ void Object::Update(DWORD elapsedTime)
 	//m_f3Position.x += 1 * m_f3Direction.x;
 	//m_f3Position.y += 1 * m_f3Direction.y;
 	//m_f3Position.z += 1 * m_f3Direction.z;
-	
 	m_f3Position.x += elapsedTime * (m_f3Direction).x;
 	m_f3Position.y += elapsedTime * (m_f3Direction).y;
 	m_f3Position.z += elapsedTime * (m_f3Direction).z;
@@ -124,7 +123,7 @@ void Building::BulletShot()
 
 		bullet->SetColor(1, 0, 0, 0);
 		bullet->SetDirection(dirVector.x, dirVector.y, 0);
-		bullet->SetLife(1);
+		bullet->SetLife(BULLET_LIFE);
 		bullet->SetPosition(this->GetPosition());
 
 		m_listBullet.push_back(bullet);
