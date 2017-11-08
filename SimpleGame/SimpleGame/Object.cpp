@@ -16,7 +16,10 @@ Object::Object()
 	m_f4Color.b = 1.0f;
 	m_f4Color.a = 1.0f;
 
-	m_iLife = 5;
+	m_iLife = 15;
+
+	m_fLifeTime = 0;
+
 	m_iObjectType = -1;
 }
 
@@ -35,9 +38,16 @@ void Object::Update(DWORD elapsedTime)
 	m_f3Position.y += elapsedTime * (m_f3Direction).y;
 	m_f3Position.z += elapsedTime * (m_f3Direction).z;
 
+	//m_fLifeTime = clock() / 1000;
 
+	//cout << m_fLifeTime << endl;
+
+	m_fLifeTime += (float)elapsedTime / (float) 1000;
+
+	//cout << m_fLifeTime << endl;
 
 }
+/////////////
 Enemy::Enemy()
 {
 
@@ -46,6 +56,9 @@ Enemy::~Enemy()
 {
 
 }
+////////////////
+
+
 Ally::Ally()
 {
 
@@ -54,14 +67,11 @@ Ally::~Ally()
 {
 
 }
-Building::Building()
-{
+//////////////
 
-}
-Building::~Building()
-{
 
-}
+
+
 Bullet::Bullet()
 {
 
@@ -70,6 +80,7 @@ Bullet::~Bullet()
 {
 
 }
+/////////////////
 Arrow::Arrow()
 {
 
@@ -78,3 +89,83 @@ Arrow::~Arrow()
 {
 
 }
+
+Building::Building()
+{
+	m_fShootTimer_Bullet = 0;
+	m_bShootState_Bullet = false;
+}
+Building::~Building()
+{
+
+}
+void Building::DamageAnimate()
+{
+
+
+}
+void Building::BulletShot()
+{
+
+	if (m_bShootState_Bullet == true)
+	{
+		Bullet *bullet = new Bullet;
+		default_random_engine dre;
+		uniform_real_distribution<> urMovingDirection(-1.0f, 1.0f);
+		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+
+		FLOAT3 dirVector;
+		dirVector.x = urMovingDirection(dre);
+		dirVector.y = urMovingDirection(dre);
+		dirVector.z = 0;
+
+		dirVector = Vector3::Normalize(dirVector);
+
+
+		bullet->SetColor(1, 0, 0, 0);
+		bullet->SetDirection(dirVector.x, dirVector.y, 0);
+		bullet->SetLife(1);
+		bullet->SetPosition(this->GetPosition());
+
+		m_listBullet.push_back(bullet);
+	}
+	
+	//cout << this->GetLifeTime() << endl;
+
+}
+
+void Building::ArrowShot()
+{
+	
+}
+
+void Building::Update(DWORD elapsedTime)
+{
+	for (auto iter = m_listBullet.begin(); iter != m_listBullet.end(); ++iter)
+	{
+		(*iter)->m_f3Position.x += elapsedTime * (*iter)->m_f3Direction.x;
+		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
+	}
+
+
+	m_fShootTimer_Bullet += elapsedTime;
+
+
+	if ((float)m_fShootTimer_Bullet / (float)1000 > 0.5f)
+	{
+		m_bShootState_Bullet = true;
+		m_fShootTimer_Bullet = 0;
+	}
+	else
+	{
+		m_bShootState_Bullet = false;
+	}
+
+	//this->m_f3Position.x += elapsedTime * (m_f3Direction).x;
+	//this->m_f3Position.y += elapsedTime * (m_f3Direction).y;
+	//this->m_f3Position.z += elapsedTime * (m_f3Direction).z;
+
+	
+	
+}
+//////////////////////

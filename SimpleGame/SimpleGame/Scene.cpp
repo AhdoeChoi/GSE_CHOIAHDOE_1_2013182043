@@ -5,8 +5,9 @@
 Scene::Scene()
 {
 	m_fObjectSize = 10;
+	m_fBuildingSize = 40;
 	m_iColorTimer = 0;
-	
+	m_nObjects = 0;
 	BuildObject();
 
 
@@ -20,6 +21,11 @@ Scene::Scene()
 	m_nBuilding = 0;
 	m_nBullet = 0;
 	m_nArrow = 0;
+
+	m_iCollideCnt = 0;
+
+	m_bCollideState = false;
+
 }
 
 Scene::~Scene()
@@ -32,33 +38,39 @@ void Scene::BuildObject()
 {
 	m_pObjects = new Object[MAX_OBJECTS_COUNT];
 
-	default_random_engine dre;
-	uniform_real_distribution<> urPosition(-225.f, 225.f);
-	uniform_real_distribution<> urMovingDirect(0.0, 0.155f);
-	dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+	//default_random_engine dre;
+	//uniform_real_distribution<> urPosition(-225.f, 225.f);
+	//uniform_real_distribution<> urMovingDirect(0.0, 0.155f);
+	//dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
 
-	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
-	{
-		float ur_x = urPosition(dre);
-		float ur_y = urPosition(dre);
-		FLOAT3 ur_center;
-		ur_center.x = ur_x;
-		ur_center.y = ur_y;
-		ur_center.z = 0;
+	//for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	//{
+	//	float ur_x = urPosition(dre);
+	//	float ur_y = urPosition(dre);
+	//	FLOAT3 ur_center;
+	//	ur_center.x = ur_x;
+	//	ur_center.y = ur_y;
+	//	ur_center.z = 0;
 
-		m_pObjects[i].SetPosition(ur_x, ur_y, 0);
-		m_pObjects[i].SetDirection(urMovingDirect(dre), urMovingDirect(dre), 0);
-		//m_pObjects[i].SetOOBB(ur_center,m_fObjectSize);
+	//	m_pObjects[i].SetPosition(ur_x, ur_y, 0);
+	//	m_pObjects[i].SetDirection(urMovingDirect(dre), urMovingDirect(dre), 0);
+	//	//m_pObjects[i].SetOOBB(ur_center,m_fObjectSize);
 
-	}
+	//}
 	AddActorObject(0,0, OBJECT_BUILDING);
 }
 
-void Scene::Update(DWORD elapsedTime)
+void Scene::UpdateObject(DWORD elapsedTime)
 {
-	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	for (int i = 0; i < m_nObjects; ++i)
 	{
 		m_pObjects[i].Update(elapsedTime);
+
+	}
+
+	for (int i = 0; i < m_nBuilding+1; ++i)
+	{
+		m_pBuilding[i].Update(elapsedTime);
 
 	}
 	Animate();
@@ -72,7 +84,7 @@ void Scene::Render()
 {
 	//cout << "Render()" << endl;
 
-	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	for (int i = 0; i < m_nObjects; ++i)
 	{
 		g_Renderer->DrawSolidRect(m_pObjects[i].GetPosition().x/*x좌표*/,
 			m_pObjects[i].GetPosition().y/*y좌표*/,
@@ -88,8 +100,14 @@ void Scene::Render()
 		g_Renderer->DrawSolidRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
 			m_pBuilding[i].GetPosition().y/*y좌표*/,
 			m_pBuilding[i].GetPosition().z/*z좌표*/,
-			100,/*크기*/
+			m_fBuildingSize,/*크기*/
 			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/);
+	}
+
+
+	for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+	{
+		g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
 	}
 
 }
@@ -97,63 +115,115 @@ void Scene::Render()
 void Scene::Animate()
 {
 
-	default_random_engine dre;
-	uniform_real_distribution<> urColor(0.5, 1.0);
-	dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
-
 	++m_iColorTimer;
 
-	for (int i = 0; i < MAX_OBJECTS_COUNT; i++)
-	{
-		for (int j = (i + 1); j < MAX_OBJECTS_COUNT; j++) //충돌체크 i= i끼리 할필요없고 i랑j 했으면 j랑i는 할필요 없어서 이렇게 for문 돌리는거임
-		{
-			if (IsCollide(&m_pObjects[i], &m_pObjects[j]))
-			{
-				//cout << m_pObjects[0].GetLife() << endl;
+	ColideDetection();
+	ReflectDetection();
 
-				FLOAT3 swapDirection;
-				swapDirection.x = m_pObjects[i].GetDirection().x;
-				swapDirection.y = m_pObjects[i].GetDirection().y;
-				swapDirection.z = m_pObjects[i].GetDirection().z;
-
-				m_pObjects[i].SetDirection(m_pObjects[j].GetDirection());
-				//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
-				m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
-
-				m_pObjects[j].SetDirection(swapDirection);
-				//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
-				//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
-
-				m_pObjects[i].SetColor(255, 0, 0, 0);
-				m_pObjects[j].SetColor(255, 0, 0, 0);
-
-				/*m_pObjects[i].IncreaseLife(-1);
-				m_pObjects[j].IncreaseLife(-1);*/ //여기이상해 ㅠ
-
-				if (m_pObjects[i].GetLife() < 0)
-				{
-					m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-				}
-				if (m_pObjects[j].GetLife() < 0)
-				{
-					m_pObjects[j].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
-
-				}
-			}
-		}
-	}
-	//cout << m_pObjects[0].GetPosition().x << "\t" << m_pObjects[0].GetPosition().y << "\t" << m_pObjects[0].GetPosition().z << endl;
-
-	if (m_iColorTimer > 100)
+	if (m_iColorTimer > 200)
 	{
 		m_iColorTimer = 0;
-		for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+		for (int i = 0; i < m_nObjects; ++i)
 		{
 			m_pObjects[i].SetColor(1, 1, 1, 0);
 		}
 
 	}
+	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	{
+		if (m_pObjects[i].GetLifeTime() > OBJECT_DELETE_TIME)
+		{
+			m_pObjects[i].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
 
+		}
+	}
+	
+	m_pBuilding->BulletShot();
+
+}
+bool Scene::IsCollide(Object* pObject1, Object * pObject2,float distance)
+{
+	float Distance = sqrt(pow((pObject1->GetPosition().x - pObject2->GetPosition().x), 2) + pow((pObject1->GetPosition().y - pObject2->GetPosition().y), 2) + pow((pObject1->GetPosition().z - pObject2->GetPosition().z), 2));
+	if (Distance < distance)
+	{
+		return true;
+	}
+	return false;
+}
+void Scene::ColideDetection()
+{
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		for (int j = (i + 1); j < m_nObjects; j++) //충돌체크 i= i끼리 할필요없고 i랑j 했으면 j랑i는 할필요 없어서 이렇게 for문 돌리는거임
+		{
+			if (IsCollide(&m_pObjects[i], &m_pObjects[j], m_fObjectSize))
+			{
+				if (m_bCollideState == false)
+				{
+					//cout << m_pObjects[0].GetLife() << endl;
+
+					FLOAT3 swapDirection;
+					swapDirection.x = m_pObjects[i].GetDirection().x;
+					swapDirection.y = m_pObjects[i].GetDirection().y;
+					swapDirection.z = m_pObjects[i].GetDirection().z;
+
+					m_pObjects[i].SetDirection(m_pObjects[j].GetDirection());
+					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 10 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 10 * m_pObjects[j].GetDirection().z);
+
+					m_pObjects[j].SetDirection(swapDirection);
+					m_pObjects[j].SetPosition(m_pObjects[j].GetPosition().x + 10 * swapDirection.x, m_pObjects[j].GetPosition().y + 10 * swapDirection.y, m_pObjects[j].GetPosition().z + 10 * swapDirection.z);
+
+					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+					m_pObjects[i].SetColor(255, 0, 0, 0);
+					m_pObjects[j].SetColor(255, 0, 0, 0);
+
+					//++m_iCollideCnt;
+
+					//cout << m_iCollideCnt << endl;
+
+					m_pObjects[i].IncreaseLife(-1);
+					m_pObjects[j].IncreaseLife(-1);
+
+					if (m_pObjects[i].GetLife() < 0)
+					{
+						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					}
+					if (m_pObjects[j].GetLife() < 0)
+					{
+						m_pObjects[j].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
+
+					}
+					m_bCollideState = true;
+				}
+				else
+				{
+					m_bCollideState = false;
+
+				}
+			}
+		}
+	}
+
+	for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
+	{
+		for (int j = 0; j < m_nBuilding + 1; j++)
+		{
+			if (IsCollide(&m_pObjects[i], &m_pBuilding[j], m_fBuildingSize))
+			{
+				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+				m_pBuilding[j].DamageAnimate();
+
+			}
+		}
+	}
+
+}
+
+void Scene::ReflectDetection()
+{
 
 	FLOAT3 xup;
 	xup.x = 0;
@@ -174,13 +244,13 @@ void Scene::Animate()
 	yright.x = -1;
 	yright.y = 0;
 	yright.z = 0;
-	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	for (int i = 0; i < m_nObjects; ++i)
 	{
 		//cout << m_pObjects[i].GetPosition().y << endl;
 		if (m_pObjects[i].GetPosition().y > 250)
 		{
 			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xup));
-			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x , m_pObjects[i].GetPosition().y - 1 , m_pObjects[i].GetPosition().z);
+			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x, m_pObjects[i].GetPosition().y - 1, m_pObjects[i].GetPosition().z);
 
 		}
 
@@ -195,26 +265,17 @@ void Scene::Animate()
 		if (m_pObjects[i].GetPosition().x < -250)
 		{
 			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yleft));
-			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x +1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
+			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
 
 		}
 
 		if (m_pObjects[i].GetPosition().x > 250)
 		{
 			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yright));
-			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x-1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
+			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x - 1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
 
 		}
 	}
-	//cout << m_pObjects[0].GetPosition().x << "\t" << m_pObjects[0].GetPosition().y << "\t" << m_pObjects[0].GetPosition().z << endl;
-	//cout << m_pObjects[1].GetVelocity().x << "\t" << m_pObjects[1].GetVelocity().y << "\t" << m_pObjects[1].GetVelocity().z << endl;
-}
-bool Scene::IsCollide(Object* pObject1, Object * pObject2)
-{
-	float Distance = sqrt(pow((pObject1->GetPosition().x - pObject2->GetPosition().x), 2) + pow((pObject1->GetPosition().y - pObject2->GetPosition().y), 2) + pow((pObject1->GetPosition().z - pObject2->GetPosition().z), 2));
-	if (Distance < 10)
-		return true;
-	return false;
 }
 FLOAT3 Scene::Reflect(FLOAT3 direction, FLOAT3 normal)
 {
@@ -256,6 +317,23 @@ void Scene::AddActorObject(float x, float y, int objectType)
 		break;
 
 	case OBJECT_CHARACTER:
+		default_random_engine dre;
+		uniform_real_distribution<> urmovingdirect(-0.35f, 0.255f);
+		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+
+
+		m_pObjects[m_nObjects].SetPosition(x, y, 0);
+		m_pObjects[m_nObjects].SetDirection(urmovingdirect(dre), urmovingdirect(dre), 0);
+		//m_pObjects[m_nObjects].SetLifeTime(clock());
+
+		if (m_nObjects < MAX_OBJECTS_COUNT)
+		{
+			m_nObjects++;
+
+		}
+		//m_pobjects[i].setoobb(ur_center,m_fobjectsize);
+
+
 		break;
 
 	}

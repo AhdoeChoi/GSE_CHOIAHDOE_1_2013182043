@@ -23,6 +23,8 @@ but WITHOUT ANY WARRANTY.
 Scene * pScene = NULL;
 DWORD CurrentTime;
 
+int ClickCnt = 0;
+
 void RenderScene(void)
 {
 
@@ -38,7 +40,7 @@ void RenderScene(void)
 	
 		pScene->Render(); // ·»´õÇÏ°í
 
-		pScene->Update(elapsedTime);
+		pScene->UpdateObject(elapsedTime);
 
 
 	}
@@ -57,9 +59,15 @@ void MouseInput(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
+		if (ClickCnt < MAX_OBJECTS_COUNT)
+		{
+			//pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
+			cout << x << "\t" << y << endl;
 
-	   pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
-		cout << x << "\t" << y << endl;
+			pScene->AddActorObject(x - 300, -y + 300, OBJECT_CHARACTER);
+		}
+	 
+		ClickCnt++;
 	}
 
 	RenderScene();

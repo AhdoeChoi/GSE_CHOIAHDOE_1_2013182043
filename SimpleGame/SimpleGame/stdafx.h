@@ -8,12 +8,13 @@
 #include <random>
 #include <time.h>
 #include <Windows.h>
+#include <list>
 using namespace std;
 
 #define PLAYERVELOCITY 3
-#define MAX_OBJECTS_COUNT 50
-#define MAX_BUILDING_COUNT 50
-
+#define MAX_OBJECTS_COUNT 10
+#define MAX_BUILDING_COUNT 1
+#define OBJECT_DELETE_TIME 20
 
 //enum
 //{
