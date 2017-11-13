@@ -18,6 +18,7 @@ using namespace std;
 #define BULLET_LIFE 20
 #define CHARACTER_LIFE 10
 #define BUILDING_LIFE 40
+#define ARROW_LIFE 10
 //enum
 //{
 //	OBJECT_BUILDING = 0,
@@ -30,7 +31,6 @@ using namespace std;
 #define	OBJECT_CHARACTER  1
 #define	OBJECT_BULLET  2
 #define	OBJECT_ARROW 3
-
 
 typedef struct float3
 {

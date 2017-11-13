@@ -26,6 +26,8 @@ Scene::Scene()
 
 	m_bCollideState = false;
 	m_bCollideState_Bullet = false;
+
+	m_Buildingtexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Grass28.png");
 }
 
 Scene::~Scene()
@@ -65,6 +67,7 @@ void Scene::Render()
 {
 	//cout << "Render()" << endl;
 
+
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		g_Renderer->DrawSolidRect(m_pObjects[i].GetPosition().x/*x좌표*/,
@@ -78,17 +81,25 @@ void Scene::Render()
 	for (int i = 0; i < m_nBuilding +1 ; ++i)
 	{
 	
-		g_Renderer->DrawSolidRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
+	
+		g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
 			m_pBuilding[i].GetPosition().y/*y좌표*/,
 			m_pBuilding[i].GetPosition().z/*z좌표*/,
 			m_fBuildingSize,/*크기*/
-			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/);
+			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture);
 	}
 
 
 	for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
 	{
 		g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+	}
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		{
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 5, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+		}
 	}
 
 }
@@ -106,7 +117,7 @@ void Scene::Animate()
 		m_iColorTimer = 0;
 		for (int i = 0; i < m_nObjects; ++i)
 		{
-			m_pObjects[i].SetColor(1, 1, 1, 0);
+			m_pObjects[i].SetColor(1, 1, 1, 1);
 		}
 
 	}
@@ -121,6 +132,9 @@ void Scene::Animate()
 	
 	for(int i = 0; i < m_nBuilding+1;++i)
 	m_pBuilding[i].BulletShot();
+
+	for (int i = 0; i < m_nObjects; ++i)
+		m_pObjects[i].BulletShot();
 
 }
 bool Scene::IsCollide(Object* pObject1, Object * pObject2,float distance)
@@ -159,8 +173,8 @@ void Scene::ColideDetection()
 					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
 					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
 
-					m_pObjects[i].SetColor(255, 0, 0, 0);
-					m_pObjects[j].SetColor(255, 0, 0, 0);
+					m_pObjects[i].SetColor(255, 0, 0, 1);
+					m_pObjects[j].SetColor(255, 0, 0, 1);
 
 					//++m_iCollideCnt;
 
@@ -244,6 +258,60 @@ void Scene::ColideDetection()
 
 				}
 			}
+		}
+	}
+
+	//플레이어가 쏜 Arrow랑 Building 충돌 검사
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		{
+			for (int j = 0; j < m_nBuilding + 1; ++j)
+			{
+				float Distance = sqrt(pow((m_pBuilding[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pBuilding[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pBuilding[j].GetPosition().z - (*iter)->GetPosition().z), 2));
+				if (Distance < 25)
+				{
+					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					m_pBuilding[j].DamageAnimate();
+					m_pBuilding[j].IncreaseLife(-ARROW_LIFE);
+					if (m_pBuilding[j].GetLife() < 0)
+					{
+						m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+					}
+				}
+				//cout << "무한 " << endl;
+
+			}
+
+
+		}
+	}
+
+	//플레이어가 쏜 Arrow랑 플레이어끼리 충돌검사
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		{
+			for (int j = 0; j < m_nObjects; ++j)
+			{
+				float Distance = sqrt(pow((m_pObjects[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[j].GetPosition().z - (*iter)->GetPosition().z), 2));
+				if (Distance < 15 &&	i!=j/*m_pObjects[i].GetPosition().x != m_pObjects[j].GetPosition().x && m_pObjects[i].GetPosition().y != m_pObjects[j].GetPosition().y*/)
+				{
+					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					m_pObjects[j].IncreaseLife(-ARROW_LIFE);
+					m_pObjects[j].SetDirection((*iter)->GetDirection().x * 0.5, (*iter)->GetDirection().y * 0.5 , (*iter)->GetDirection().z * 0.5);
+					if (m_pObjects[j].GetLife() < 0)
+					{
+						m_pObjects[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+					}
+				}
+				//cout << "무한 " << endl;
+
+			}
+
+
 		}
 	}
 

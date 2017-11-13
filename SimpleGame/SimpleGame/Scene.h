@@ -24,10 +24,12 @@ private:
 	bool m_bCollideState;
 	bool m_bCollideState_Bullet;
 
+	GLuint m_Buildingtexture;
+
+
 public:
 	
 	Player * m_pObjects = NULL;
-	Object * m_pArrow = NULL;
 	Building * m_pBuilding = NULL;
 	Renderer *g_Renderer = NULL;
 	

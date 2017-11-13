@@ -30,6 +30,58 @@ Object::~Object()
 
 void Object::Update(DWORD elapsedTime)
 {
+	
+
+}
+
+///////////////////
+
+
+Player::Player()
+{
+
+}
+Player::~Player()
+{
+
+}
+void Player::DamageAnimate()
+{
+
+}
+void Player::BulletShot()
+{
+	if (m_bShootState_Arrow == true)
+	{
+		Arrow *arrow = new Arrow;
+		default_random_engine dre;
+		uniform_real_distribution<> urMovingDirection(-4.0f, 4.0f);
+		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+
+		FLOAT3 dirVector;
+		dirVector.x = urMovingDirection(dre);
+		dirVector.y = urMovingDirection(dre);
+		dirVector.z = 0;
+
+		dirVector = Vector3::Normalize(dirVector);
+
+
+		arrow->SetColor(0, 1, 0, 1);
+		arrow->SetDirection(dirVector.x, dirVector.y, 0);
+		arrow->SetLife(ARROW_LIFE);
+		arrow->SetPosition(this->GetPosition());
+
+		m_listArrow.push_back(arrow);
+	}
+}
+
+void Player::ArrowShot()
+{
+
+}
+
+void Player::Update(DWORD elapsedTime)
+{
 	//m_f3Position.x += 1 * m_f3Direction.x;
 	//m_f3Position.y += 1 * m_f3Direction.y;
 	//m_f3Position.z += 1 * m_f3Direction.z;
@@ -41,11 +93,42 @@ void Object::Update(DWORD elapsedTime)
 
 	//cout << m_fLifeTime << endl;
 
-	m_fLifeTime += (float)elapsedTime / (float) 1000;
+	m_fLifeTime += (float)elapsedTime / (float)1000;
 
 	//cout << m_fLifeTime << endl;
 
+	//총알 업데이트
+	for (auto iter = m_listArrow.begin(); iter != m_listArrow.end(); ++iter)
+	{
+		(*iter)->m_f3Position.x += elapsedTime * (*iter)->m_f3Direction.x;
+		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
+	}
+
+
+	m_fShootTimer_Arrow += elapsedTime;
+
+
+	if ((float)m_fShootTimer_Arrow / (float)1000 > 0.5f)
+	{
+		m_bShootState_Arrow = true;
+		m_fShootTimer_Arrow = 0;
+	}
+	else
+	{
+		m_bShootState_Arrow= false;
+	}
+
 }
+
+
+
+
+
+
+
+
+
+/////////////////
 /////////////
 Enemy::Enemy()
 {
@@ -121,7 +204,7 @@ void Building::BulletShot()
 		dirVector = Vector3::Normalize(dirVector);
 
 
-		bullet->SetColor(1, 0, 0, 0);
+		bullet->SetColor(1, 0, 0, 1);
 		bullet->SetDirection(dirVector.x, dirVector.y, 0);
 		bullet->SetLife(BULLET_LIFE);
 		bullet->SetPosition(this->GetPosition());

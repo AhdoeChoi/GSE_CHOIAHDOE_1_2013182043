@@ -39,13 +39,10 @@ public:
 public:
 
 };
-class Player : public Object
-{
-
-};
 
 
-class Bullet : public Object //아군
+
+class Bullet : public Object //총알
 {
 public:
 	Bullet();
@@ -57,6 +54,27 @@ public:
 	Arrow();
 	~Arrow();
 };
+class Player : public Object
+{
+private:
+	float m_fShootTimer_Arrow;
+	bool m_bShootState_Arrow;
+
+	
+public:
+	list<Arrow*>	m_listArrow;
+	int m_nArrow;
+public:
+	Player();
+	~Player();
+	void DamageAnimate();
+	void BulletShot();
+
+	void ArrowShot();
+
+	void Update(DWORD elapsedTime);
+};
+
 class Enemy : public Object // 적군
 {
 public:
@@ -64,7 +82,7 @@ public:
 	~Enemy();
 };
 
-class Ally : public Object //아군
+class Ally : public Object //
 {
 public:
 	Ally();
@@ -72,19 +90,16 @@ public:
 };
 
 
-class Building : public Object //아군
+class Building : public Object //빌딩
 {
 private:
 	float m_fShootTimer_Bullet;
 	bool m_bShootState_Bullet;
 
-	float m_fShootTimer_Arrow;
-	bool m_bShootState_Arrow;
+	
 public:
 	list<Bullet*>	m_listBullet;
 	int	m_nBullet;
-
-	list<Arrow*>	m_listArrow;
 public:
 	Building();
 	~Building();
@@ -94,4 +109,5 @@ public:
 	void ArrowShot();
 
 	void Update(DWORD elapsedTime);
+
 };
