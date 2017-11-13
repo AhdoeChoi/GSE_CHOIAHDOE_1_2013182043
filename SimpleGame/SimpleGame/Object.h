@@ -39,6 +39,12 @@ public:
 public:
 
 };
+class Player : public Object
+{
+
+};
+
+
 class Bullet : public Object //¾Æ±º
 {
 public:

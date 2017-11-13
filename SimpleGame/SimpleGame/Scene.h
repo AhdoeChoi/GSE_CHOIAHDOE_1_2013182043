@@ -26,7 +26,7 @@ private:
 
 public:
 	
-	Object * m_pObjects = NULL;
+	Player * m_pObjects = NULL;
 	Object * m_pArrow = NULL;
 	Building * m_pBuilding = NULL;
 	Renderer *g_Renderer = NULL;

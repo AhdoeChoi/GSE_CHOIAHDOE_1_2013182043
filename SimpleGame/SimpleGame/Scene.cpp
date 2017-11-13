@@ -36,7 +36,7 @@ Scene::~Scene()
 
 void Scene::BuildObject()
 {
-	m_pObjects = new Object[MAX_OBJECTS_COUNT];
+	m_pObjects = new Player[MAX_OBJECTS_COUNT];
 
 	AddActorObject(0,0, OBJECT_BUILDING);
 }
