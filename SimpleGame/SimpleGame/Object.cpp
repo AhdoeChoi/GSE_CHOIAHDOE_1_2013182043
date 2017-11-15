@@ -39,7 +39,7 @@ void Object::Update(DWORD elapsedTime)
 
 Player::Player()
 {
-
+	m_fShootTimer_Arrow = 0;
 }
 Player::~Player()
 {
@@ -104,10 +104,10 @@ void Player::Update(DWORD elapsedTime)
 		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
 	}
 
+	//cout << m_fLifeTime << endl;
 
 	m_fShootTimer_Arrow += elapsedTime;
-
-
+	//cout << m_fShootTimer_Arrow << endl;
 	if ((float)m_fShootTimer_Arrow / (float)1000 > 0.5f)
 	{
 		m_bShootState_Arrow = true;
@@ -231,7 +231,7 @@ void Building::Update(DWORD elapsedTime)
 
 
 	m_fShootTimer_Bullet += elapsedTime;
-
+	
 
 	if ((float)m_fShootTimer_Bullet / (float)1000 > 0.5f)
 	{
