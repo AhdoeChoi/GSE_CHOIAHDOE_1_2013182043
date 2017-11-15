@@ -64,7 +64,7 @@ void MouseInput(int button, int state, int x, int y)
 			//pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
 			cout << x << "\t" << y << endl;
 
-			pScene->AddActorObject(x - 300, -y + 300, OBJECT_CHARACTER);
+			pScene->AddActorObject(x - 300, - y + 300, OBJECT_CHARACTER);
 		}
 	 
 		ClickCnt++;

@@ -77,7 +77,6 @@ void Scene::Render()
 			m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/);
 	}
 
-
 	for (int i = 0; i < m_nBuilding +1 ; ++i)
 	{
 	
@@ -157,7 +156,7 @@ void Scene::ColideDetection()
 				if (m_bCollideState == false)
 				{
 					//cout << m_pObjects[0].GetLife() << endl;
-
+					
 					FLOAT3 swapDirection;
 					swapDirection.x = m_pObjects[i].GetDirection().x;
 					swapDirection.y = m_pObjects[i].GetDirection().y;
@@ -417,8 +416,8 @@ void Scene::AddActorObject(float x, float y, int objectType)
 		uniform_real_distribution<> urmovingdirect(-0.35f, 0.255f);
 		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
 
-
-		m_pObjects[m_nObjects].SetPosition(x, y, 0);
+		cout << x << "!" << y << endl;
+		m_pObjects[m_nObjects].SetPosition(x -x*0.19, y-y*0.19, 0);
 		m_pObjects[m_nObjects].SetDirection(urmovingdirect(dre), urmovingdirect(dre), 0);
 		m_pObjects[m_nObjects].SetLife(CHARACTER_LIFE);
 		//m_pObjects[m_nObjects].SetLifeTime(clock());
