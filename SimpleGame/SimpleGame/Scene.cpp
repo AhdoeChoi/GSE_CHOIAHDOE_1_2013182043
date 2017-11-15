@@ -230,7 +230,8 @@ void Scene::ColideDetection()
 					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
 					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
 
-				
+					//.
+
 					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
 					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
 
