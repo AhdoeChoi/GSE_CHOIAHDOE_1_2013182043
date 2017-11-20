@@ -54,13 +54,11 @@ void Player::BulletShot()
 	if (m_bShootState_Arrow == true)
 	{
 		Arrow *arrow = new Arrow;
-		default_random_engine dre;
-		uniform_real_distribution<> urMovingDirection(-4.0f, 4.0f);
-		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+	
 
 		FLOAT3 dirVector;
-		dirVector.x = urMovingDirection(dre);
-		dirVector.y = urMovingDirection(dre);
+		dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+		dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
 		dirVector.z = 0;
 
 		dirVector = Vector3::Normalize(dirVector);
@@ -87,7 +85,7 @@ void Player::Update(DWORD elapsedTime)
 
 	m_f3Position.x += elapsedTime * (m_f3Direction).x;
 	m_f3Position.y += elapsedTime * (m_f3Direction).y;
-	m_f3Position.z += elapsedTime * (m_f3Direction).z;
+	m_f3Position.z += elapsedTime * (m_f3Direction).z; //요깅
 
 	//m_fLifeTime = clock() / 1000;
 
@@ -186,25 +184,36 @@ void Building::DamageAnimate()
 
 
 }
-void Building::BulletShot()
+void Building::BulletShot(int type)
 {
 
 	if (m_bShootState_Bullet == true)
 	{
 		Bullet *bullet = new Bullet;
-		default_random_engine dre;
-		uniform_real_distribution<> urMovingDirection(-1.0f, 1.0f);
-		dre.seed(time(NULL)); //매번달라지게하기위해 seed값을줌
+		
 
 		FLOAT3 dirVector;
-		dirVector.x = urMovingDirection(dre);
-		dirVector.y = urMovingDirection(dre);
+		if (type == OBJECT_BUILDING_NORTH)
+		{
+			dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+			dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX) - 1.0f);
+		}
+		if (type == OBJECT_BUILDING_SOUTH)
+		{
+			dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+			dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX));
+		}
+
+		
 		dirVector.z = 0;
 
 		dirVector = Vector3::Normalize(dirVector);
 
+		if(type==OBJECT_BUILDING_NORTH)
+			bullet->SetColor(1, 1, 0, 1);
+		else if (type == OBJECT_BUILDING_SOUTH)
+			bullet->SetColor(1, 0, 0, 1);
 
-		bullet->SetColor(1, 0, 0, 1);
 		bullet->SetDirection(dirVector.x, dirVector.y, 0);
 		bullet->SetLife(BULLET_LIFE);
 		bullet->SetPosition(this->GetPosition());
@@ -233,7 +242,7 @@ void Building::Update(DWORD elapsedTime)
 	m_fShootTimer_Bullet += elapsedTime;
 	
 
-	if ((float)m_fShootTimer_Bullet / (float)1000 > 0.5f)
+	if ((float)m_fShootTimer_Bullet / (float)1000 > 10.0f)
 	{
 		m_bShootState_Bullet = true;
 		m_fShootTimer_Bullet = 0;

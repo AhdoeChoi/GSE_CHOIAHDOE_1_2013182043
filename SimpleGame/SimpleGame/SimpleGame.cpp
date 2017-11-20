@@ -41,7 +41,7 @@ void RenderScene(void)
 		pScene->Render(); // ·»´õÇÏ°í
 
 		pScene->UpdateObject(elapsedTime);
-
+		pScene->CoolTimeCount(elapsedTime);
 
 	}
 	
@@ -59,15 +59,14 @@ void MouseInput(int button, int state, int x, int y)
 {
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
 	{
-		if (ClickCnt < MAX_OBJECTS_COUNT)
-		{
+		
 			//pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
 			cout << x << "\t" << y << endl;
 
-			pScene->AddActorObject(x - 300, - y + 300, OBJECT_CHARACTER);
-		}
+			pScene->AddActorObject(x - WINDOW_WIDTH/2, - y + WINDOW_HEIGHT/2, OBJECT_CHARACTER);
+		
 	 
-		ClickCnt++;
+		//ClickCnt++;
 	}
 
 	RenderScene();
@@ -96,7 +95,7 @@ int main(int argc, char **argv)
 	glutInit(&argc, argv);
 	glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
 	glutInitWindowPosition(0, 0);
-	glutInitWindowSize(600, 600);
+	glutInitWindowSize(WINDOW_WIDTH, WINDOW_HEIGHT);
 	glutCreateWindow("Game Software Engineering KPU");
 
 	glewInit();

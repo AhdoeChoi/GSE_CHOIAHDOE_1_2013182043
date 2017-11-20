@@ -9,11 +9,12 @@
 #include <time.h>
 #include <Windows.h>
 #include <list>
+#include <chrono>
 using namespace std;
 
 #define PLAYERVELOCITY 3
 #define MAX_OBJECTS_COUNT 10
-#define MAX_BUILDING_COUNT 1
+#define MAX_BUILDING_COUNT 3
 #define OBJECT_DELETE_TIME 20
 #define BULLET_LIFE 20
 #define CHARACTER_LIFE 10
@@ -27,10 +28,18 @@ using namespace std;
 //	OBJECT_ARROW = 3
 //}OBJECTTYPE;
 
-#define OBJECT_BUILDING 0
+#define OBJECT_BUILDING_NORTH 0
+#define OBJECT_BUILDING_SOUTH -1
 #define	OBJECT_CHARACTER  1
+#define OBJECT_CHARACTER_NORTH -2
 #define	OBJECT_BULLET  2
 #define	OBJECT_ARROW 3
+#define	OBJECT_TEAMNORTH 4
+#define	OBJECT_TEAMSOUTH 5
+
+
+#define WINDOW_WIDTH 500
+#define WINDOW_HEIGHT 800
 
 typedef struct float3
 {

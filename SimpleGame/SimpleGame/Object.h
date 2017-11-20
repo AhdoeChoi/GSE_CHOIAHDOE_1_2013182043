@@ -104,7 +104,7 @@ public:
 	Building();
 	~Building();
 	void DamageAnimate();
-	void BulletShot();
+	void BulletShot(int type);
 
 	void ArrowShot();
 
