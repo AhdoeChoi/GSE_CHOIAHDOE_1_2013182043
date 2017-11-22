@@ -12,11 +12,14 @@ Scene::Scene()
 	m_nEnemy = 0;
 	m_nBullet = 0;
 	m_nArrow = 0;
-
+	m_nObjects_NORTH = 0;
 	m_iCollideCnt = 0;
+	m_fNorthEnemyCreateTimer = 0;
 
 	m_bCollideState = false;
+	m_bCollideState_NORTH = false;
 	m_bCollideState_Bullet = false;
+	m_bCollideState_Bullet_NORTH = false;
 	m_bCollideState_BuildingBullet_BuildingNorth = false;
 	m_bCollideState_BuildingNorthBullet_Building = false;
 
@@ -43,6 +46,7 @@ Scene::~Scene()
 void Scene::BuildObject()
 {
 	m_pObjects = new Player[MAX_OBJECTS_COUNT];
+	m_pObjects_NORTH = new Player[MAX_OBJECTS_COUNT];
 
 	AddActorObject(-150,-300, OBJECT_BUILDING_SOUTH);
 	AddActorObject(0, -300, OBJECT_BUILDING_SOUTH);
@@ -53,13 +57,36 @@ void Scene::BuildObject()
 	AddActorObject(150, 300, OBJECT_BUILDING_NORTH);
 
 }
+void Scene::NorthEnemyCreate(DWORD elapsedTime)
+{
+	m_fNorthEnemyCreateTimer += elapsedTime;
 
+	//cout << m_fNorthEnemyCreateTimer << endl;
+
+	if (m_fNorthEnemyCreateTimer / 1000 > 5)
+	{
+		//cout << " 자동생성" << endl;
+		AddActorObject(0, 0, OBJECT_CHARACTER_NORTH);
+		m_fNorthEnemyCreateTimer = 0;
+	}
+
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		//cout << m_pObjects_NORTH[i].GetPosition().x << "\t" << m_pObjects_NORTH[i].GetPosition().y << "\t" << m_pObjects_NORTH[i].GetPosition().z << endl;
+	}
+}
 void Scene::UpdateObject(DWORD elapsedTime)
 {
 	
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		m_pObjects[i].Update(elapsedTime);
+
+	}
+
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		m_pObjects_NORTH[i].Update(elapsedTime);
 
 	}
 
@@ -75,6 +102,7 @@ void Scene::UpdateObject(DWORD elapsedTime)
 
 	}
 	Animate();
+	NorthEnemyCreate(elapsedTime);
 
 	//cout << m_pObjects[0].m_CircleCollider.m_f3Center.x << "\t" << m_pObjects[0].m_CircleCollider.m_f3Center.y << "\t" << m_pObjects[0].m_CircleCollider.m_f3Center.z << endl;
 
@@ -95,6 +123,14 @@ void Scene::Render()
 			m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/);
 	}
 
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		g_Renderer->DrawSolidRect(m_pObjects_NORTH[i].GetPosition().x/*x좌표*/,
+			m_pObjects_NORTH[i].GetPosition().y/*y좌표*/,
+			m_pObjects_NORTH[i].GetPosition().z/*z좌표*/,
+			m_fObjectSize,/*크기*/
+			m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/);
+	}
 
 	for (int i = 0; i < m_nBuilding_NORTH; ++i)
 	{
@@ -137,6 +173,14 @@ void Scene::Render()
 		}
 	}
 
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
+		{
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 5, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+		}
+	}
+
 }
 
 void Scene::Animate()
@@ -173,6 +217,8 @@ void Scene::Animate()
 
 	for (int i = 0; i < m_nObjects; ++i)
 		m_pObjects[i].BulletShot();
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+		m_pObjects_NORTH[i].BulletShot();
 
 }
 bool Scene::IsCollide(Object* pObject1, Object * pObject2,float distance)
@@ -228,35 +274,80 @@ void Scene::ColideDetection()
 		}
 	}
 
-	for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
-	{
-		for (int j = 0; j < m_nBuilding; j++)
-		{
-			if (IsCollide(&m_pObjects[i], &m_pBuilding[j], m_fBuildingSize))
-			{
+	//////////////
 
-				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-				m_pBuilding[j].DamageAnimate();
-				m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
-				if (m_pBuilding[j].GetLife() < 0)
+	for (int i = 0; i < m_nObjects_NORTH; i++)
+	{
+		for (int j = (i + 1); j < m_nObjects_NORTH; j++) //충돌체크 i= i끼리 할필요없고 i랑j 했으면 j랑i는 할필요 없어서 이렇게 for문 돌리는거임
+		{
+			if (IsCollide(&m_pObjects_NORTH[i], &m_pObjects_NORTH[j], m_fObjectSize))
+			{
+				if (m_bCollideState_NORTH == false)
 				{
-					m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					//cout << m_pObjects[0].GetLife() << endl;
+
+					FLOAT3 swapDirection;
+					swapDirection.x = m_pObjects_NORTH[i].GetDirection().x;
+					swapDirection.y = m_pObjects_NORTH[i].GetDirection().y;
+					swapDirection.z = m_pObjects_NORTH[i].GetDirection().z;
+
+					m_pObjects_NORTH[i].SetDirection(m_pObjects_NORTH[j].GetDirection());
+					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+					m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x + 10 * m_pObjects_NORTH[j].GetDirection().x, m_pObjects_NORTH[i].GetPosition().y + 10 * m_pObjects_NORTH[j].GetDirection().y, m_pObjects_NORTH[i].GetPosition().z + 10 * m_pObjects_NORTH[j].GetDirection().z);
+
+					m_pObjects_NORTH[j].SetDirection(swapDirection);
+					m_pObjects_NORTH[j].SetPosition(m_pObjects_NORTH[j].GetPosition().x + 10 * swapDirection.x, m_pObjects_NORTH[j].GetPosition().y + 10 * swapDirection.y, m_pObjects_NORTH[j].GetPosition().z + 10 * swapDirection.z);
+
+					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+					
+					//++m_iCollideCnt;
+
+					//cout << m_iCollideCnt << endl;
+
+					m_bCollideState_NORTH = true;
+				}
+				else
+				{
+					m_bCollideState_NORTH = false;
 
 				}
 			}
 		}
 	}
+
+	//for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
+	//{
+	//	for (int j = 0; j < m_nBuilding; j++)
+	//	{
+	//		if (IsCollide(&m_pObjects[i], &m_pBuilding[j], m_fBuildingSize))
+	//		{
+
+	//			m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//			m_pBuilding[j].DamageAnimate();
+	//			m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
+	//			if (m_pBuilding[j].GetLife() < 0)
+	//			{
+	//				m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+	//			}
+	//		}
+	//	}
+	//}
+
 	for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
 	{
 		for (int j = 0; j < m_nBuilding_NORTH; j++)
 		{
-			if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize))
+			if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize-5))
 			{
 
 				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 				m_pBuilding_NORTH[j].DamageAnimate();
-				m_pBuilding_NORTH[j].IncreaseLife(-CHARACTER_LIFE);
-				if (m_pBuilding_NORTH[j].GetLife() < 0)
+				if (m_pBuilding_NORTH[j].GetLife() > 0)
+					m_pBuilding_NORTH[j].IncreaseLife(-CHARACTER_LIFE);
+				if (m_pBuilding_NORTH[j].GetLife() <= 0)
 				{
 					m_pBuilding_NORTH[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
@@ -265,59 +356,81 @@ void Scene::ColideDetection()
 		}
 	}
 
-
-
-	for (int i = 0; i < m_nObjects; ++i) //빌딩의총알과 오브젝트 충돌
+	for (int i = 0; i < m_nObjects_NORTH; i++) //빌딩과 캐릭터_NORTH 충돌
 	{
-		for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+		for (int j = 0; j < m_nBuilding; j++)
 		{
-			float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
-
-			if (Distance < m_fObjectSize)
+			if (IsCollide(&m_pObjects_NORTH[i], &m_pBuilding[j], m_fBuildingSize-5))
 			{
-				if (m_bCollideState_Bullet == false)
+
+				m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+				m_pBuilding[j].DamageAnimate();
+				if (m_pBuilding[j].GetLife() > 0)
+					m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
+				if (m_pBuilding[j].GetLife() <= 0)
 				{
-					//cout << m_pObjects[0].GetLife() << endl;
-
-					FLOAT3 swapDirection;
-					swapDirection.x = m_pObjects[i].GetDirection().x;
-					swapDirection.y = m_pObjects[i].GetDirection().y;
-					swapDirection.z = m_pObjects[i].GetDirection().z;
-
-					m_pObjects[i].SetDirection((*iter)->GetDirection());
-					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
-					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
-
-					//.
-
-					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
-					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
-
-
-					//++m_iCollideCnt;
-
-					//cout << m_iCollideCnt << endl;
-
-					m_pObjects[i].IncreaseLife(-BULLET_LIFE);
-				
-
-					if (m_pObjects[i].GetLife() < 0)
-					{
-						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-					}
-					
-					m_bCollideState_Bullet = true;
-					(*iter)->SetPosition(33333, 34433, 33333);
-
-				}
-				else
-				{
-					m_bCollideState_Bullet = false;
+					m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
 				}
 			}
 		}
 	}
+
+
+	//for (int i = 0; i < m_nObjects; ++i) //빌딩의총알과 오브젝트 충돌
+	//{
+	//	for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+	//	{
+	//		float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+
+	//		if (Distance < m_fObjectSize)
+	//		{
+	//			if (m_bCollideState_Bullet == false)
+	//			{
+	//				//cout << m_pObjects[0].GetLife() << endl;
+
+	//				FLOAT3 swapDirection;
+	//				swapDirection.x = m_pObjects[i].GetDirection().x;
+	//				swapDirection.y = m_pObjects[i].GetDirection().y;
+	//				swapDirection.z = m_pObjects[i].GetDirection().z;
+
+	//				m_pObjects[i].SetDirection((*iter)->GetDirection());
+	//				//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+	//				m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
+
+	//				//.
+
+	//				//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+	//				//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+
+	//				//++m_iCollideCnt;
+
+	//				//cout << m_iCollideCnt << endl;
+
+	//				m_pObjects[i].IncreaseLife(-BULLET_LIFE);
+	//			
+
+	//				if (m_pObjects[i].GetLife() < 0)
+	//				{
+	//					m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//				}
+	//				
+	//				m_bCollideState_Bullet = true;
+	//				(*iter)->SetPosition(33333, 34433, 33333);
+
+	//			}
+	//			else
+	//			{
+	//				m_bCollideState_Bullet = false;
+
+	//			}
+	//		}
+	//	}
+	//}
+
+
+
 	for (int i = 0; i < m_nObjects; ++i) //빌딩_NORTH 총알과 오브젝트 충돌
 	{
 		for (auto iter = m_pBuilding_NORTH->m_listBullet.begin(); iter != m_pBuilding_NORTH->m_listBullet.end(); ++iter)
@@ -349,10 +462,11 @@ void Scene::ColideDetection()
 
 					//cout << m_iCollideCnt << endl;
 
+					if (m_pObjects[i].GetLife() > 0)
 					m_pObjects[i].IncreaseLife(-BULLET_LIFE);
 
 
-					if (m_pObjects[i].GetLife() < 0)
+					if (m_pObjects[i].GetLife() <= 0)
 					{
 						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 					}
@@ -370,12 +484,66 @@ void Scene::ColideDetection()
 		}
 	}
 
-
-
-	//플레이어가 쏜 Arrow랑 Building 충돌 검사
-	for (int i = 0; i < m_nObjects; ++i)
+	//빌딩 총알과 OBJECT_NORT 충돌 체크
+	for (int i = 0; i < m_nObjects_NORTH; ++i) //빌딩_NORTH 총알과 오브젝트 충돌
 	{
-		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+		{
+			float Distance = sqrt(pow((m_pObjects_NORTH[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects_NORTH[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects_NORTH[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+
+			if (Distance < m_fObjectSize)
+			{
+				if (m_bCollideState_Bullet_NORTH == false)
+				{
+					//cout << m_pObjects[0].GetLife() << endl;
+
+					FLOAT3 swapDirection;
+					swapDirection.x = m_pObjects_NORTH[i].GetDirection().x;
+					swapDirection.y = m_pObjects_NORTH[i].GetDirection().y;
+					swapDirection.z = m_pObjects_NORTH[i].GetDirection().z;
+
+					m_pObjects_NORTH[i].SetDirection((*iter)->GetDirection());
+					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+					m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects_NORTH[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects_NORTH[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
+
+					//.
+
+					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+
+					//++m_iCollideCnt;
+
+					//cout << m_iCollideCnt << endl;
+
+					if (m_pObjects_NORTH[i].GetLife() > 0)
+						m_pObjects_NORTH[i].IncreaseLife(-BULLET_LIFE);
+
+
+					if (m_pObjects_NORTH[i].GetLife() <= 0)
+					{
+						m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+					}
+
+					m_bCollideState_Bullet_NORTH = true;
+					(*iter)->SetPosition(33333, 34433, 33333);
+
+				}
+				else
+				{
+					m_bCollideState_Bullet_NORTH = false;
+
+				}
+			}
+		}
+	}
+
+
+
+	//오브젝트_NORTH 쏜 Arrow랑 Building 충돌 검사
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
 		{
 			for (int j = 0; j < m_nBuilding; ++j)
 			{
@@ -384,8 +552,10 @@ void Scene::ColideDetection()
 				{
 					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 					m_pBuilding[j].DamageAnimate();
+
+					if (m_pBuilding[j].GetLife() > 0)
 					m_pBuilding[j].IncreaseLife(-ARROW_LIFE);
-					if (m_pBuilding[j].GetLife() < 0)
+					if (m_pBuilding[j].GetLife() <= 0)
 					{
 						m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
@@ -399,7 +569,7 @@ void Scene::ColideDetection()
 		}
 	}
 
-	//플레이어가 쏜 Arrow랑 Building 충돌 검사
+	//플레이어가 쏜 Arrow랑 Building)NORTH 충돌 검사
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
@@ -411,8 +581,10 @@ void Scene::ColideDetection()
 				{
 					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 					m_pBuilding_NORTH[j].DamageAnimate();
+
+					if (m_pBuilding_NORTH[j].GetLife() > 0)
 					m_pBuilding_NORTH[j].IncreaseLife(-ARROW_LIFE);
-					if (m_pBuilding_NORTH[j].GetLife() < 0)
+					if (m_pBuilding_NORTH[j].GetLife() <= 0)
 					{
 						m_pBuilding_NORTH[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
@@ -427,22 +599,24 @@ void Scene::ColideDetection()
 	}
 
 
-	//플레이어가 쏜 Arrow랑 플레이어끼리 충돌검사
+	//플레이어가 쏜 Arrow랑 오브젝트_NORTH끼리 충돌검사
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
 		{
-			for (int j = 0; j < m_nObjects; ++j)
+			for (int j = 0; j < m_nObjects_NORTH; ++j)
 			{
-				float Distance = sqrt(pow((m_pObjects[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[j].GetPosition().z - (*iter)->GetPosition().z), 2));
+				float Distance = sqrt(pow((m_pObjects_NORTH[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects_NORTH[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects_NORTH[j].GetPosition().z - (*iter)->GetPosition().z), 2));
 				if (Distance < 15 &&	i!=j/*m_pObjects[i].GetPosition().x != m_pObjects[j].GetPosition().x && m_pObjects[i].GetPosition().y != m_pObjects[j].GetPosition().y*/)
 				{
 					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-					m_pObjects[j].IncreaseLife(-ARROW_LIFE);
-					m_pObjects[j].SetDirection((*iter)->GetDirection().x * 0.5, (*iter)->GetDirection().y * 0.5 , (*iter)->GetDirection().z * 0.5);
-					if (m_pObjects[j].GetLife() < 0)
+
+					if (m_pObjects_NORTH[j].GetLife() > 0)
+					m_pObjects_NORTH[j].IncreaseLife(-ARROW_LIFE);
+					m_pObjects_NORTH[j].SetDirection((*iter)->GetDirection().x * 0.5, (*iter)->GetDirection().y * 0.5 , (*iter)->GetDirection().z * 0.5);
+					if (m_pObjects_NORTH[j].GetLife() <= 0)
 					{
-						m_pObjects[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+						m_pObjects_NORTH[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
 					}
 				}
@@ -458,7 +632,7 @@ void Scene::ColideDetection()
 
 	//빌딩 총알과 빌딩 충돌체크
 	//1. 빌딩이 쏜 총알이 빌딩_NORTH와 충돌한경우
-	for (int i = 0; i < m_nBuilding_NORTH; ++i) //빌딩의총알과 오브젝트 충돌
+	for (int i = 0; i < m_nBuilding_NORTH; ++i) 
 	{
 		for (int j = 0; j < m_nBuilding; ++j)
 		{
@@ -473,10 +647,11 @@ void Scene::ColideDetection()
 						//cout << m_pObjects[0].GetLife() << endl;
 						cout << "남쪽에서 쏜 총알에 북쪽이 맞았습니다." << endl;
 
+						if (m_pBuilding_NORTH[i].GetLife() > 0)
 						m_pBuilding_NORTH[i].IncreaseLife(-BULLET_LIFE);
 
 
-						if (m_pBuilding_NORTH[i].GetLife() < 0)
+						if (m_pBuilding_NORTH[i].GetLife() <= 0)
 						{
 							m_pBuilding_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 						}
@@ -514,10 +689,12 @@ void Scene::ColideDetection()
 						//cout << m_pObjects[0].GetLife() << endl;
 						cout << "북쪽에서 쏜 총알에 남쪽이이 맞았습니다." << endl;
 
+
+						if (m_pBuilding[i].GetLife() > 0)
 						m_pBuilding[i].IncreaseLife(-BULLET_LIFE);
 
 
-						if (m_pBuilding[i].GetLife() < 0)
+						if (m_pBuilding[i].GetLife() <= 0)
 						{
 							m_pBuilding[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 						}
@@ -566,7 +743,7 @@ void Scene::ReflectDetection()
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		//cout << m_pObjects[i].GetPosition().y << endl;
-		if (m_pObjects[i].GetPosition().y > 0)
+		if (m_pObjects[i].GetPosition().y > WINDOW_HEIGHT / 2 )
 		{
 			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xup));
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x, m_pObjects[i].GetPosition().y - 1, m_pObjects[i].GetPosition().z);
@@ -592,6 +769,40 @@ void Scene::ReflectDetection()
 		{
 			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yright));
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x - 1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
+
+		}
+	}
+
+	/////
+	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	{
+		//cout << m_pObjects[i].GetPosition().y << endl;
+		if (m_pObjects_NORTH[i].GetPosition().y > WINDOW_HEIGHT / 2)
+		{
+			m_pObjects_NORTH[i].SetDirection(Reflect(m_pObjects_NORTH[i].GetDirection(), xup));
+			m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x, m_pObjects_NORTH[i].GetPosition().y - 1, m_pObjects_NORTH[i].GetPosition().z);
+
+		}
+
+		//cout << m_pObjects[i].GetPosition().y << endl;
+		if (m_pObjects_NORTH[i].GetPosition().y < -WINDOW_HEIGHT / 2)
+		{
+			m_pObjects_NORTH[i].SetDirection(Reflect(m_pObjects_NORTH[i].GetDirection(), xdown));
+			m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x, m_pObjects_NORTH[i].GetPosition().y + 1, m_pObjects_NORTH[i].GetPosition().z);
+
+		}
+
+		if (m_pObjects_NORTH[i].GetPosition().x < -WINDOW_WIDTH / 2)
+		{
+			m_pObjects_NORTH[i].SetDirection(Reflect(m_pObjects_NORTH[i].GetDirection(), yleft));
+			m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x + 1, m_pObjects_NORTH[i].GetPosition().y, m_pObjects_NORTH[i].GetPosition().z);
+
+		}
+
+		if (m_pObjects_NORTH[i].GetPosition().x > WINDOW_WIDTH / 2)
+		{
+			m_pObjects_NORTH[i].SetDirection(Reflect(m_pObjects_NORTH[i].GetDirection(), yright));
+			m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x - 1, m_pObjects_NORTH[i].GetPosition().y, m_pObjects_NORTH[i].GetPosition().z);
 
 		}
 	}
@@ -660,12 +871,12 @@ void Scene::AddActorObject(float x, float y, int objectType)
 			m_bCoolTimeOn = true;
 			//coolTime Count On
 			cout << x << "!" << y << endl;
-	
+			if (y > 0) y = 0;
 
 			if (m_bCoolTimeFinish == true)
 			{
 				m_bCoolTimeFinish = false;
-				if (y > 0) y = 0;
+			
 				m_pObjects[m_nObjects].SetPosition(x, y, 0);
 
 
@@ -693,14 +904,33 @@ void Scene::AddActorObject(float x, float y, int objectType)
 			}
 		}
 		m_iClickCnt++;
+	case OBJECT_CHARACTER_NORTH:
+		if (m_nObjects_NORTH < MAX_OBJECTS_COUNT)
+		{
+			//m_pObjects_NORTH[m_nObjects_NORTH].SetPosition((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX) - 0.5f), 0);
+			m_pObjects_NORTH[m_nObjects_NORTH].SetPosition(0, 0, 0);
+
+			m_pObjects_NORTH[m_nObjects_NORTH].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX)), 0);
+			m_pObjects_NORTH[m_nObjects_NORTH].SetLife(CHARACTER_LIFE);
+			m_pObjects_NORTH[m_nObjects_NORTH].SetColor(0, 0, 1, 1);
+			m_nObjects_NORTH++;
+			break;
+		}
+			break;
 
 	
-
 	}
+
 }
 void Scene::CoolTimeCount(DWORD elapsedTime)
 {
-	
+	cout << "----------------------------------" << endl;
+	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	{
+		cout << m_pBuilding_NORTH[i].GetLife() << endl;
+	}
+	cout << "----------------------------------" << endl;
+
 	if (m_bCoolTimeOn == true)
 	{
 		m_fCoolTime += elapsedTime;
@@ -712,7 +942,7 @@ void Scene::CoolTimeCount(DWORD elapsedTime)
 		m_bCoolTimeFinish = true;
 	}
 	//cout << m_fCoolTime << endl;
-	cout << m_bCoolTimeFinish << endl;
+	//cout << m_bCoolTimeFinish << endl;
 }
 void Scene::CoolTimeCheck()
 {
@@ -720,8 +950,13 @@ void Scene::CoolTimeCheck()
 }
 void Scene::Release()
 {
+	
 	delete[] m_pObjects;
+	delete[] m_pObjects_NORTH;
+
 	delete g_Renderer;
+	delete[] m_pBuilding_NORTH;
+	delete[] m_pBuilding;
 
 
 }

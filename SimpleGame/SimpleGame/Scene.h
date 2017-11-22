@@ -21,10 +21,13 @@ private:
 	int m_iCollideCnt;
 
 	int m_nObjects;
+	int m_nObjects_NORTH;
 
 	bool m_bBuild;
 	bool m_bCollideState;
+	bool m_bCollideState_NORTH;
 	bool m_bCollideState_Bullet;
+	bool m_bCollideState_Bullet_NORTH;
 
 	bool m_bCollideState_BuildingBullet_BuildingNorth;
 	bool m_bCollideState_BuildingNorthBullet_Building;
@@ -37,6 +40,8 @@ public:
 	bool m_bCoolTimeFinish = true;
 	bool m_bCoolTimeOn = false;
 	Player * m_pObjects = NULL;
+	Player * m_pObjects_NORTH = NULL;
+
 	Building * m_pBuilding = NULL;
 	Building * m_pBuilding_NORTH = NULL;
 
@@ -49,7 +54,10 @@ public:
 	void CoolTimeCount(DWORD elapsedTime);
 	void CoolTimeCheck();
 
+public:
+	float m_fNorthEnemyCreateTimer= 0;
 
+	void NorthEnemyCreate(DWORD elapsedTime);
 public:
 	void UpdateObject(DWORD elapsedTime);
 	void Render();

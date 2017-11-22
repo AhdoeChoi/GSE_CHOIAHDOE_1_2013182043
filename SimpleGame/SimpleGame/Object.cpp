@@ -106,7 +106,7 @@ void Player::Update(DWORD elapsedTime)
 
 	m_fShootTimer_Arrow += elapsedTime;
 	//cout << m_fShootTimer_Arrow << endl;
-	if ((float)m_fShootTimer_Arrow / (float)1000 > 0.5f)
+	if ((float)m_fShootTimer_Arrow / (float)1000 > 3.0f)
 	{
 		m_bShootState_Arrow = true;
 		m_fShootTimer_Arrow = 0;
