@@ -12,7 +12,8 @@ private:
 	float m_fBuildingSize;
 	int m_iColorTimer;
 	bool m_bColorChange[MAX_OBJECTS_COUNT];
-
+	float m_fBulletSize;
+	float m_fArrowSize;
 	int m_nEnemy;
 	int m_nBuilding;
 	int m_nBuilding_NORTH;

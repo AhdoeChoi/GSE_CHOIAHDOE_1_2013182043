@@ -5,7 +5,7 @@
 Scene::Scene()
 {
 	m_fObjectSize = 10;
-	m_fBuildingSize = 40;
+	m_fBuildingSize = 100;
 	m_iColorTimer = 0;
 	m_nObjects = 0;
 	m_nBuilding = 0;
@@ -15,6 +15,8 @@ Scene::Scene()
 	m_nObjects_NORTH = 0;
 	m_iCollideCnt = 0;
 	m_fNorthEnemyCreateTimer = 0;
+	m_fBulletSize = 2;
+	m_fArrowSize = 2;
 
 	m_bCollideState = false;
 	m_bCollideState_NORTH = false;
@@ -140,14 +142,6 @@ void Scene::Render()
 			m_fBuildingSize,/*크기*/
 			m_pBuilding_NORTH[i].GetColor().r/*red*/, m_pBuilding_NORTH[i].GetColor().g/*green*/, m_pBuilding_NORTH[i].GetColor().b/*blue*/, m_pBuilding_NORTH[i].GetColor().a/*alpha*/, m_Buildingtexture_NORTH);
 	}
-	for (int i = 0; i < m_nBuilding_NORTH; ++i)
-	{
-		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
-		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
-		}
-	}
-
 	for (int i = 0; i < m_nBuilding; ++i)
 	{
 		g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
@@ -156,11 +150,20 @@ void Scene::Render()
 			m_fBuildingSize,/*크기*/
 			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture);
 	}
+	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	{
+		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
+		{
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+		}
+	}
+
+
 	for (int i = 0; i < m_nBuilding; ++i)
 	{
 		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
 		}
 	}
 	
@@ -169,7 +172,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 5, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
 		}
 	}
 
@@ -177,7 +180,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 5, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
 		}
 	}
 
@@ -191,7 +194,7 @@ void Scene::Animate()
 	ColideDetection();
 	ReflectDetection();
 
-	if (m_iColorTimer > 200)
+	/*if (m_iColorTimer > 200)
 	{
 		m_iColorTimer = 0;
 		for (int i = 0; i < m_nObjects; ++i)
@@ -199,7 +202,7 @@ void Scene::Animate()
 			m_pObjects[i].SetColor(1, 1, 1, 1);
 		}
 
-	}
+	}*/
 	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
 	{
 		if (m_pObjects[i].GetLifeTime() > OBJECT_DELETE_TIME)
@@ -257,8 +260,8 @@ void Scene::ColideDetection()
 					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
 					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
 
-					m_pObjects[i].SetColor(255, 0, 0, 1);
-					m_pObjects[j].SetColor(255, 0, 0, 1);
+					/*m_pObjects[i].SetColor(255, 0, 0, 1);
+					m_pObjects[j].SetColor(255, 0, 0, 1);*/
 					//++m_iCollideCnt;
 
 					//cout << m_iCollideCnt << endl;
@@ -340,7 +343,7 @@ void Scene::ColideDetection()
 	{
 		for (int j = 0; j < m_nBuilding_NORTH; j++)
 		{
-			if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize-5))
+			if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize / (float)2))
 			{
 
 				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
@@ -360,7 +363,7 @@ void Scene::ColideDetection()
 	{
 		for (int j = 0; j < m_nBuilding; j++)
 		{
-			if (IsCollide(&m_pObjects_NORTH[i], &m_pBuilding[j], m_fBuildingSize-5))
+			if (IsCollide(&m_pObjects_NORTH[i], &m_pBuilding[j], m_fBuildingSize / (float)2))
 			{
 
 				m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
@@ -908,7 +911,7 @@ void Scene::AddActorObject(float x, float y, int objectType)
 		if (m_nObjects_NORTH < MAX_OBJECTS_COUNT)
 		{
 			//m_pObjects_NORTH[m_nObjects_NORTH].SetPosition((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX) - 0.5f), 0);
-			m_pObjects_NORTH[m_nObjects_NORTH].SetPosition(0, 0, 0);
+			m_pObjects_NORTH[m_nObjects_NORTH].SetPosition((200 * ((float)std::rand() / (float)RAND_MAX) - 0.5f), (360 * ((float)std::rand() / (float)RAND_MAX)), 0);
 
 			m_pObjects_NORTH[m_nObjects_NORTH].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX)), 0);
 			m_pObjects_NORTH[m_nObjects_NORTH].SetLife(CHARACTER_LIFE);
@@ -924,12 +927,12 @@ void Scene::AddActorObject(float x, float y, int objectType)
 }
 void Scene::CoolTimeCount(DWORD elapsedTime)
 {
-	cout << "----------------------------------" << endl;
-	for (int i = 0; i < m_nBuilding_NORTH; ++i)
-	{
-		cout << m_pBuilding_NORTH[i].GetLife() << endl;
-	}
-	cout << "----------------------------------" << endl;
+	//cout << "----------------------------------" << endl;
+	//for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	//{
+	//	cout << m_pBuilding_NORTH[i].GetLife() << endl;
+	//}
+	//cout << "----------------------------------" << endl;
 
 	if (m_bCoolTimeOn == true)
 	{

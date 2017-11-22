@@ -210,9 +210,9 @@ void Building::BulletShot(int type)
 		dirVector = Vector3::Normalize(dirVector);
 
 		if(type==OBJECT_BUILDING_NORTH)
-			bullet->SetColor(1, 1, 0, 1);
-		else if (type == OBJECT_BUILDING_SOUTH)
 			bullet->SetColor(1, 0, 0, 1);
+		else if (type == OBJECT_BUILDING_SOUTH)
+			bullet->SetColor(0, 0, 1, 1);
 
 		bullet->SetDirection(dirVector.x, dirVector.y, 0);
 		bullet->SetLife(BULLET_LIFE);
