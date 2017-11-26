@@ -15,8 +15,8 @@ Scene::Scene()
 	m_nObjects_NORTH = 0;
 	m_iCollideCnt = 0;
 	m_fNorthEnemyCreateTimer = 0;
-	m_fBulletSize = 2;
-	m_fArrowSize = 2;
+	m_fBulletSize = 8;
+	m_fArrowSize = 8;
 
 	m_bCollideState = false;
 	m_bCollideState_NORTH = false;
@@ -122,7 +122,15 @@ void Scene::Render()
 			m_pObjects[i].GetPosition().y/*yÁÂÇ¥*/,
 			m_pObjects[i].GetPosition().z/*zÁÂÇ¥*/,
 			m_fObjectSize,/*Å©±â*/
-			m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/);
+			m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/,0.2);
+
+		g_Renderer->DrawSolidRectGauge(m_pObjects[i].GetPosition().x/*xÁÂÇ¥*/,
+			m_pObjects[i].GetPosition().y + 20/*yÁÂÇ¥*/,
+			m_pObjects[i].GetPosition().z/*zÁÂÇ¥*/,
+			50, 10,
+			0, 0, 1, 1,
+			m_pObjects[i].GetLife() / (float)10, 0.2);
+		
 	}
 
 	for (int i = 0; i < m_nObjects_NORTH; ++i)
@@ -131,7 +139,31 @@ void Scene::Render()
 			m_pObjects_NORTH[i].GetPosition().y/*yÁÂÇ¥*/,
 			m_pObjects_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
 			m_fObjectSize,/*Å©±â*/
-			m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/);
+			m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/,0.2);
+
+		g_Renderer->DrawSolidRectGauge(m_pObjects_NORTH[i].GetPosition().x/*xÁÂÇ¥*/,
+			m_pObjects_NORTH[i].GetPosition().y + 20/*yÁÂÇ¥*/,
+			m_pObjects_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
+			50, 10,
+			0, 0, 1, 1,
+			m_pObjects_NORTH[i].GetLife() / (float)10, 0.2);
+	}
+
+
+	for (int i = 0; i < m_nBuilding; ++i)
+	{
+		g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*xÁÂÇ¥*/,
+			m_pBuilding[i].GetPosition().y/*yÁÂÇ¥*/,
+			m_pBuilding[i].GetPosition().z/*zÁÂÇ¥*/,
+			m_fBuildingSize,/*Å©±â*/
+			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture,0.1);
+
+		g_Renderer->DrawSolidRectGauge(m_pBuilding[i].GetPosition().x/*xÁÂÇ¥*/,
+			m_pBuilding[i].GetPosition().y + 50/*yÁÂÇ¥*/,
+			m_pBuilding[i].GetPosition().z/*zÁÂÇ¥*/,
+			100, 10,
+			0, 0, 1, 1,
+			(float)m_pBuilding[i].GetLife() / (float)40, 0.2);
 	}
 
 	for (int i = 0; i < m_nBuilding_NORTH; ++i)
@@ -140,39 +172,41 @@ void Scene::Render()
 			m_pBuilding_NORTH[i].GetPosition().y/*yÁÂÇ¥*/,
 			m_pBuilding_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
 			m_fBuildingSize,/*Å©±â*/
-			m_pBuilding_NORTH[i].GetColor().r/*red*/, m_pBuilding_NORTH[i].GetColor().g/*green*/, m_pBuilding_NORTH[i].GetColor().b/*blue*/, m_pBuilding_NORTH[i].GetColor().a/*alpha*/, m_Buildingtexture_NORTH);
+			m_pBuilding_NORTH[i].GetColor().r/*red*/, m_pBuilding_NORTH[i].GetColor().g/*green*/, m_pBuilding_NORTH[i].GetColor().b/*blue*/, m_pBuilding_NORTH[i].GetColor().a/*alpha*/, m_Buildingtexture_NORTH, 0.1);
+
+		g_Renderer->DrawSolidRectGauge(m_pBuilding_NORTH[i].GetPosition().x/*xÁÂÇ¥*/,
+			m_pBuilding_NORTH[i].GetPosition().y + 50/*yÁÂÇ¥*/,
+			m_pBuilding_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
+			100, 10,
+			1, 0, 0, 1,
+			(float)m_pBuilding_NORTH[i].GetLife() / (float)40, 0.2);
 	}
-	for (int i = 0; i < m_nBuilding; ++i)
-	{
-		g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*xÁÂÇ¥*/,
-			m_pBuilding[i].GetPosition().y/*yÁÂÇ¥*/,
-			m_pBuilding[i].GetPosition().z/*zÁÂÇ¥*/,
-			m_fBuildingSize,/*Å©±â*/
-			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture);
-	}
-	for (int i = 0; i < m_nBuilding_NORTH; ++i)
-	{
-		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
-		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
-		}
-	}
+
+
+	
 
 
 	for (int i = 0; i < m_nBuilding; ++i)
 	{
 		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
 	
+	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	{
+		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
+		{
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
+		}
+	}
 
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
 
@@ -180,7 +214,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
 		{
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a);
+			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
 
