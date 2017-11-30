@@ -32,10 +32,17 @@ private:
 
 	bool m_bCollideState_BuildingBullet_BuildingNorth;
 	bool m_bCollideState_BuildingNorthBullet_Building;
+
 	GLuint m_Buildingtexture;
 	GLuint m_Buildingtexture_NORTH;
+	GLuint m_BackGroundTexture;
+	GLuint m_AnimationTexture;
+	GLuint m_AnimationTexture_NORTH;
 
-
+	GLuint m_ParticleTextureBullet;
+	int m_iAnimationFrameCnt = 0;
+	float m_iScene_ElapsedTime = 0;
+	int m_iAnimationFrame = 0;
 public:
 	float m_fCoolTime = 0;
 	bool m_bCoolTimeFinish = true;

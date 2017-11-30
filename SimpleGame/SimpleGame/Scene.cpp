@@ -27,6 +27,10 @@ Scene::Scene()
 
 	m_Buildingtexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Grass28.png");
 	m_Buildingtexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Tree.png");
+	m_BackGroundTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Background.png");
+	m_AnimationTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation.png");
+	m_AnimationTexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation_NORTH.png");
+	m_ParticleTextureBullet = g_Renderer->CreatePngTexture("../Textures/PNGs/Particle.png");
 	BuildObject();
 
 
@@ -118,31 +122,41 @@ void Scene::Render()
 	//cout << m_pObjects[0].GetPosition().x << "\t" << m_pObjects[0].GetPosition().y << endl;
 	for (int i = 0; i < m_nObjects; ++i)
 	{
-		g_Renderer->DrawSolidRect(m_pObjects[i].GetPosition().x/*xÁÂÇ¥*/,
-			m_pObjects[i].GetPosition().y/*yÁÂÇ¥*/,
-			m_pObjects[i].GetPosition().z/*zÁÂÇ¥*/,
-			m_fObjectSize,/*Å©±â*/
-			m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/,0.2);
+		g_Renderer->DrawTexturedRectSeq(m_pObjects[i].GetPosition().x,
+			m_pObjects[i].GetPosition().y,
+			m_pObjects[i].GetPosition().z,
+			50, 1, 1, 1, 1, m_AnimationTexture, m_iAnimationFrame/2, 0, 6,1, 0.3);
+
+		//g_Renderer->DrawSolidRect(m_pObjects[i].GetPosition().x/*xÁÂÇ¥*/,
+		//	m_pObjects[i].GetPosition().y/*yÁÂÇ¥*/,
+		//	m_pObjects[i].GetPosition().z/*zÁÂÇ¥*/,
+		//	m_fObjectSize,/*Å©±â*/
+		//	m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/,0.2);
 
 		g_Renderer->DrawSolidRectGauge(m_pObjects[i].GetPosition().x/*xÁÂÇ¥*/,
-			m_pObjects[i].GetPosition().y + 20/*yÁÂÇ¥*/,
+			m_pObjects[i].GetPosition().y + 30/*yÁÂÇ¥*/,
 			m_pObjects[i].GetPosition().z/*zÁÂÇ¥*/,
 			50, 10,
 			0, 0, 1, 1,
 			m_pObjects[i].GetLife() / (float)10, 0.2);
 		
 	}
-
+	 
 	for (int i = 0; i < m_nObjects_NORTH; ++i)
 	{
-		g_Renderer->DrawSolidRect(m_pObjects_NORTH[i].GetPosition().x/*xÁÂÇ¥*/,
-			m_pObjects_NORTH[i].GetPosition().y/*yÁÂÇ¥*/,
-			m_pObjects_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
-			m_fObjectSize,/*Å©±â*/
-			m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/,0.2);
+		g_Renderer->DrawTexturedRectSeq(m_pObjects_NORTH[i].GetPosition().x,
+			m_pObjects_NORTH[i].GetPosition().y,
+			m_pObjects_NORTH[i].GetPosition().z,
+			50, 1, 1, 1, 1, m_AnimationTexture_NORTH, m_iAnimationFrame / 2, 0, 6, 1, 0.3);
+
+		//g_Renderer->DrawSolidRect(m_pObjects_NORTH[i].GetPosition().x/*xÁÂÇ¥*/,
+		//	m_pObjects_NORTH[i].GetPosition().y/*yÁÂÇ¥*/,
+		//	m_pObjects_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
+		//	m_fObjectSize,/*Å©±â*/
+		//	m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/,0.2);
 
 		g_Renderer->DrawSolidRectGauge(m_pObjects_NORTH[i].GetPosition().x/*xÁÂÇ¥*/,
-			m_pObjects_NORTH[i].GetPosition().y + 20/*yÁÂÇ¥*/,
+			m_pObjects_NORTH[i].GetPosition().y + 30/*yÁÂÇ¥*/,
 			m_pObjects_NORTH[i].GetPosition().z/*zÁÂÇ¥*/,
 			50, 10,
 			0, 0, 1, 1,
@@ -182,14 +196,22 @@ void Scene::Render()
 			(float)m_pBuilding_NORTH[i].GetLife() / (float)40, 0.2);
 	}
 
+	g_Renderer->DrawTexturedRect(0/*xÁÂÇ¥*/,
+		0/*yÁÂÇ¥*/,
+		0/*zÁÂÇ¥*/,
+		800,/*Å©±â*/
+		1/*red*/, 1/*green*/, 1/*blue*/, 1/*alpha*/, m_BackGroundTexture, 0.99);
+
+
 
 	
-
+	cout << m_iScene_ElapsedTime << endl;
 
 	for (int i = 0; i < m_nBuilding; ++i)
 	{
 		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
 		{
+			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
@@ -198,6 +220,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
 		{
+			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
 		}
 	}
@@ -206,6 +229,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
 		{
+			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
@@ -214,6 +238,7 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
 		{
+			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a,0.3);
 		}
 	}
@@ -222,6 +247,12 @@ void Scene::Render()
 
 void Scene::Animate()
 {
+	if (m_iAnimationFrameCnt > 18)
+	{
+		++m_iAnimationFrame;
+		m_iAnimationFrameCnt = 0;
+	}
+	++ m_iAnimationFrameCnt;
 
 	++m_iColorTimer;
 
@@ -961,6 +992,9 @@ void Scene::AddActorObject(float x, float y, int objectType)
 }
 void Scene::CoolTimeCount(DWORD elapsedTime)
 {
+	m_iScene_ElapsedTime += elapsedTime;
+
+	
 	//cout << "----------------------------------" << endl;
 	//for (int i = 0; i < m_nBuilding_NORTH; ++i)
 	//{

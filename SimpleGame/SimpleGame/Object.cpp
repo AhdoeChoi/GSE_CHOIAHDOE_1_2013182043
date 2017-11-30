@@ -57,11 +57,11 @@ void Player::BulletShot()
 	
 
 		FLOAT3 dirVector;
-		dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
-		dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+		dirVector.x =/* 2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+		dirVector.y = /*2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
 		dirVector.z = 0;
 
-		dirVector = Vector3::Normalize(dirVector);
+		//dirVector = Vector3::Normalize(dirVector);
 
 
 		arrow->SetColor(0, 1, 0, 1);
@@ -195,19 +195,19 @@ void Building::BulletShot(int type)
 		FLOAT3 dirVector;
 		if (type == OBJECT_BUILDING_NORTH)
 		{
-			dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
-			dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX) - 1.0f);
+			dirVector.x = /*60.f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+			dirVector.y = /*60.f **/(((float)std::rand() / (float)RAND_MAX) - 1.0f);
 		}
 		if (type == OBJECT_BUILDING_SOUTH)
 		{
-			dirVector.x = 60.f *(((float)std::rand() / (float)RAND_MAX) - 0.5f);
-			dirVector.y = 60.f *(((float)std::rand() / (float)RAND_MAX));
+			dirVector.x = /*60.f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+			dirVector.y = /*60.f **/(((float)std::rand() / (float)RAND_MAX));
 		}
 
 		
 		dirVector.z = 0;
 
-		dirVector = Vector3::Normalize(dirVector);
+		//dirVector = Vector3::Normalize(dirVector);
 
 		if(type==OBJECT_BUILDING_NORTH)
 			bullet->SetColor(1, 0, 0, 1);
