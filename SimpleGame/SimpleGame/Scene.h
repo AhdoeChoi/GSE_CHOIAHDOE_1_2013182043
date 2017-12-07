@@ -2,10 +2,14 @@
 
 #include "Object.h"
 #include "Renderer.h"
-
+#include "Sound.h"
 
 class Scene
 {
+private:
+	Sound *m_sound = NULL;
+	int soundBG = 0;
+
 private:
 	int m_iClickCnt = 0;
 	float m_fObjectSize;
