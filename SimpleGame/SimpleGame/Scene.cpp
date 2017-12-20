@@ -28,15 +28,6 @@ Scene::Scene()
 	m_bCollideState_BuildingBullet_BuildingNorth = false;
 	m_bCollideState_BuildingNorthBullet_Building = false;
 
-	m_Buildingtexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Grass28.png");
-	m_Buildingtexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Tree.png");
-	m_BackGroundTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Background.png");
-	m_AnimationTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation.png");
-	m_AnimationTexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation_NORTH.png");
-	m_ParticleTextureBullet = g_Renderer->CreatePngTexture("../Textures/PNGs/Particle.png");
-	BuildObject();
-
-
 	// Initialize Renderer
 	g_Renderer = new Renderer(WINDOW_WIDTH, WINDOW_HEIGHT);
 	if (!g_Renderer->IsInitialized())
@@ -46,6 +37,19 @@ Scene::Scene()
 	soundBG = m_sound->CreateSound("./Dependencies/SoundSamples/MF-W-90.XM");
 
 	m_sound->PlaySound(soundBG, true, 0.2f);
+
+	m_Buildingtexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Grass28.png");
+	m_Buildingtexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Tree.png");
+	m_BackGroundTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Background.png");
+	m_AnimationTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation.png");
+	m_AnimationTexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation_NORTH.png");
+	m_ParticleTextureBullet = g_Renderer->CreatePngTexture("../Textures/PNGs/Particle.png");
+	m_SnowTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/snow.png");
+
+	BuildObject();
+
+
+	
 
 
 }
@@ -212,22 +216,21 @@ void Scene::Render()
 
 
 
-	cout << m_iScene_ElapsedTime << endl;
 
 	for (int i = 0; i < m_nBuilding; ++i)
 	{
 		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
 		{
-			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
+			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
 		}
 	}
 
 	for (int i = 0; i < m_nBuilding_NORTH; ++i)
 	{
-		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
+		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)				
 		{
-			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
+			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
 			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
 		}
 	}
@@ -250,6 +253,60 @@ void Scene::Render()
 		}
 	}
 	g_Renderer->DrawText(0, 0, GLUT_BITMAP_TIMES_ROMAN_10, 1, 0, 0, "hellow");
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(0, 0, 0,
+			0.5,
+			1, 1, 1, 1,
+			0.3, 0.1, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(0, 0, 0,
+			0.5,
+			1, 1, 1, 1,
+			-0.3, -0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(100, 100, 0,
+			0.5,
+			1, 1, 1, 1,
+			0, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(-100, -300, 0,
+			0.5,
+			1, 1, 1, 1,
+			0.3, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(100, 100, 0,
+			0.5,
+			1, 1, 1, 1,
+			0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
+
+	for (int i = 0; i < 100; ++i)
+	{
+		g_Renderer->DrawParticleClimate(-100, 100, 0,
+			0.5,
+			1, 1, 1, 1,
+			0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	}
 
 }
 
@@ -1001,7 +1058,22 @@ void Scene::AddActorObject(float x, float y, int objectType)
 void Scene::CoolTimeCount(DWORD elapsedTime)
 {
 	m_iScene_ElapsedTime += elapsedTime;
+	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	{
+		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)
+		{
 
+			(*iter)->m_iScene_ElapsedTime += elapsedTime;
+		}
+	}
+
+	for (int i = 0; i < m_nBuilding; ++i)
+	{
+		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
+		{
+			(*iter)->m_iScene_ElapsedTime += elapsedTime;
+		}
+	}
 	
 	//cout << "----------------------------------" << endl;
 	//for (int i = 0; i < m_nBuilding_NORTH; ++i)

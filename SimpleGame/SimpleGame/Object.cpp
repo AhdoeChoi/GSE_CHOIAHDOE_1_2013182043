@@ -234,8 +234,8 @@ void Building::Update(DWORD elapsedTime)
 {
 	for (auto iter = m_listBullet.begin(); iter != m_listBullet.end(); ++iter)
 	{
-		(*iter)->m_f3Position.x += elapsedTime * (*iter)->m_f3Direction.x;
-		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
+		(*iter)->m_f3Position.x += elapsedTime * (*iter)->m_f3Direction.x*0.1;
+		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y*0.1;
 	}
 
 

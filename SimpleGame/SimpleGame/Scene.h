@@ -42,6 +42,8 @@ private:
 	GLuint m_BackGroundTexture;
 	GLuint m_AnimationTexture;
 	GLuint m_AnimationTexture_NORTH;
+	GLuint m_SnowTexture;
+
 
 	GLuint m_ParticleTextureBullet;
 	int m_iAnimationFrameCnt = 0;

@@ -45,6 +45,8 @@ public:
 class Bullet : public Object //ÃÑ¾Ë
 {
 public:
+	float m_iScene_ElapsedTime = 0;
+
 	Bullet();
 	~Bullet();
 };
