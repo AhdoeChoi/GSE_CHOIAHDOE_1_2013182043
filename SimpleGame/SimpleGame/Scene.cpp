@@ -10,7 +10,7 @@ Scene::Scene()
 	m_fObjectSize = 10;
 	m_fBuildingSize = 100;
 	m_iColorTimer = 0;
-	m_nObjects = 0;
+	m_nObjects = 1;
 	m_nBuilding = 0;
 	m_nEnemy = 0;
 	m_nBullet = 0;
@@ -45,7 +45,16 @@ Scene::Scene()
 	m_AnimationTexture_NORTH = g_Renderer->CreatePngTexture("../Textures/PNGs/Animation_NORTH.png");
 	m_ParticleTextureBullet = g_Renderer->CreatePngTexture("../Textures/PNGs/Particle.png");
 	m_SnowTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/snow.png");
+	m_PlayerArrowTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Character_bullet.png");
 
+	m_ITEMSTATE_HPTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/HP.png");
+	m_ITEMSTATE_PowerUpTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/PowerUP.png");
+	m_ITEMSTATE_ClearTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/Clear.png");
+	m_MeteorTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/mymeteor.png");
+	m_Object_NorthTexture = g_Renderer->CreatePngTexture("../Textures/PNGs/object_North.png");
+
+	m_GameOver = g_Renderer->CreatePngTexture("../Textures/PNGs/GameOver.png");
+	m_GameWin = g_Renderer->CreatePngTexture("../Textures/PNGs/GameWin.png");
 	BuildObject();
 
 
@@ -64,6 +73,9 @@ void Scene::BuildObject()
 {
 	m_pObjects = new Player[MAX_OBJECTS_COUNT];
 	m_pObjects_NORTH = new Player[MAX_OBJECTS_COUNT];
+	m_pBossMonster = new Player;
+
+	m_pBossMonster->SetPosition(0, 200, 0);
 
 	AddActorObject(-150,-300, OBJECT_BUILDING_SOUTH);
 	AddActorObject(0, -300, OBJECT_BUILDING_SOUTH);
@@ -94,7 +106,32 @@ void Scene::NorthEnemyCreate(DWORD elapsedTime)
 }
 void Scene::UpdateObject(DWORD elapsedTime)
 {
+	if (m_pBuilding_NORTH)
+	{
+		if (m_pBuilding_NORTH[0].GetLife() <= 0 && m_pBuilding_NORTH[1].GetLife() <= 0 && m_pBuilding_NORTH[2].GetLife() <= 0)
+		{
+			if(m_iGameState == GAMEPLAY) 
+			m_iGameState = GAMEWIN;
+		}
+	}
 	
+	FLOAT3 f3BossMonsterDirectionV;
+	::ZeroMemory(&f3BossMonsterDirectionV, sizeof(f3BossMonsterDirectionV));
+
+
+	//m_pBossMonster->SetPosition(m_pObjects[0].GetPosition().x, 300, 0);
+	
+	f3BossMonsterDirectionV.x = (m_pObjects[0].GetPosition().x - m_pBossMonster->GetPosition().x)* 0.0003 * elapsedTime;
+	f3BossMonsterDirectionV.y = (m_pObjects[0].GetPosition().y - m_pBossMonster->GetPosition().y) * 0.0003 * elapsedTime;
+
+
+
+	//Vector3::Normalize(f3BossMonsterDirectionV);
+
+	m_pBossMonster->SetDirection(f3BossMonsterDirectionV);
+
+	m_pBossMonster->Update(elapsedTime);
+
 	for (int i = 0; i < m_nObjects; ++i)
 	{
 		m_pObjects[i].Update(elapsedTime);
@@ -131,34 +168,30 @@ void Scene::Render()
 	//cout << "Render()" << endl;
 
 	//cout << m_pObjects[0].GetPosition().x << "\t" << m_pObjects[0].GetPosition().y << endl;
-	for (int i = 0; i < m_nObjects; ++i)
+
+	for (int i = 0; i < m_nObjects; ++i) //플레이어 그리기
 	{
 		g_Renderer->DrawTexturedRectSeq(m_pObjects[i].GetPosition().x,
 			m_pObjects[i].GetPosition().y,
 			m_pObjects[i].GetPosition().z,
 			50, 1, 1, 1, 1, m_AnimationTexture, m_iAnimationFrame / 2, 0, 6, 1, 0.3);
 
-		//g_Renderer->DrawSolidRect(m_pObjects[i].GetPosition().x/*x좌표*/,
-		//	m_pObjects[i].GetPosition().y/*y좌표*/,
-		//	m_pObjects[i].GetPosition().z/*z좌표*/,
-		//	m_fObjectSize,/*크기*/
-		//	m_pObjects[i].GetColor().r/*red*/, m_pObjects[i].GetColor().g/*green*/, m_pObjects[i].GetColor().b/*blue*/, m_pObjects[i].GetColor().a/*alpha*/,0.2);
 
-		g_Renderer->DrawSolidRectGauge(m_pObjects[i].GetPosition().x/*x좌표*/,
+		g_Renderer->DrawSolidRectGauge(m_pObjects[i].GetPosition().x/*x좌표*/, //플레이어 hp그리기
 			m_pObjects[i].GetPosition().y + 30/*y좌표*/,
 			m_pObjects[i].GetPosition().z/*z좌표*/,
 			50, 10,
 			0, 0, 1, 1,
-			m_pObjects[i].GetLife() / (float)10, 0.2);
+			m_pObjects[i].GetLife() / (float)100, 0.2);
 
 	}
 
-	for (int i = 0; i < m_nObjects_NORTH; ++i)
+	for (int i = 0; i < m_nObjects_NORTH; ++i) //적 그리기
 	{
-		g_Renderer->DrawTexturedRectSeq(m_pObjects_NORTH[i].GetPosition().x,
+		g_Renderer->DrawTexturedRect(m_pObjects_NORTH[i].GetPosition().x,
 			m_pObjects_NORTH[i].GetPosition().y,
 			m_pObjects_NORTH[i].GetPosition().z,
-			50, 1, 1, 1, 1, m_AnimationTexture_NORTH, m_iAnimationFrame / 2, 0, 6, 1, 0.3);
+			50, 1, 1, 1, 1, m_Object_NorthTexture, 0.3);
 
 		//g_Renderer->DrawSolidRect(m_pObjects_NORTH[i].GetPosition().x/*x좌표*/,
 		//	m_pObjects_NORTH[i].GetPosition().y/*y좌표*/,
@@ -166,32 +199,57 @@ void Scene::Render()
 		//	m_fObjectSize,/*크기*/
 		//	m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/,0.2);
 
-		g_Renderer->DrawSolidRectGauge(m_pObjects_NORTH[i].GetPosition().x/*x좌표*/,
-			m_pObjects_NORTH[i].GetPosition().y + 30/*y좌표*/,
-			m_pObjects_NORTH[i].GetPosition().z/*z좌표*/,
-			50, 10,
-			0, 0, 1, 1,
-			m_pObjects_NORTH[i].GetLife() / (float)10, 0.2);
+		//g_Renderer->DrawSolidRectGauge(m_pObjects_NORTH[i].GetPosition().x/*x좌표*/,
+		//	m_pObjects_NORTH[i].GetPosition().y + 30/*y좌표*/,
+		//	m_pObjects_NORTH[i].GetPosition().z/*z좌표*/,
+		//	50, 10,
+		//	0, 0, 1, 1,
+		//	m_pObjects_NORTH[i].GetLife() / (float)10, 0.2);
 	}
 
+	///////////////////////////////////////////////////////////
+	//보스몬스터 그리기
+	g_Renderer->DrawTexturedRectSeq(m_pBossMonster->GetPosition().x,
+		m_pBossMonster->GetPosition().y,
+		m_pBossMonster->GetPosition().z,
+		50, 1, 1, 1, 1, m_AnimationTexture_NORTH, m_iAnimationFrame / 2, 0, 6, 1, 0.8);
 
-	for (int i = 0; i < m_nBuilding; ++i)
-	{
-		g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
-			m_pBuilding[i].GetPosition().y/*y좌표*/,
-			m_pBuilding[i].GetPosition().z/*z좌표*/,
-			m_fBuildingSize,/*크기*/
-			m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture, 0.1);
+	//g_Renderer->DrawSolidRect(m_pObjects_NORTH[i].GetPosition().x/*x좌표*/,
+	//	m_pObjects_NORTH[i].GetPosition().y/*y좌표*/,
+	//	m_pObjects_NORTH[i].GetPosition().z/*z좌표*/,
+	//	m_fObjectSize,/*크기*/
+	//	m_pObjects_NORTH[i].GetColor().r/*red*/, m_pObjects_NORTH[i].GetColor().g/*green*/, m_pObjects_NORTH[i].GetColor().b/*blue*/, m_pObjects_NORTH[i].GetColor().a/*alpha*/,0.2);
 
-		g_Renderer->DrawSolidRectGauge(m_pBuilding[i].GetPosition().x/*x좌표*/,
-			m_pBuilding[i].GetPosition().y + 50/*y좌표*/,
-			m_pBuilding[i].GetPosition().z/*z좌표*/,
-			100, 10,
-			0, 0, 1, 1,
-			(float)m_pBuilding[i].GetLife() / (float)40, 0.2);
-	}
+	
 
-	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	/////////////////////////////////////////////////////////////////////////////
+
+	//보스몬스터 총알
+		for (auto iter = m_pBossMonster->m_listArrow.begin(); iter != m_pBossMonster->m_listArrow.end(); ++iter)
+		{
+			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
+			g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 30, 1, 1, 1, 1, m_PlayerArrowTexture,0.3);
+		}
+
+	//////////////////////////////////////////////////////////////////////
+
+	//for (int i = 0; i < m_nBuilding; ++i) //내꺼 빌딩
+	//{
+	//	g_Renderer->DrawTexturedRect(m_pBuilding[i].GetPosition().x/*x좌표*/,
+	//		m_pBuilding[i].GetPosition().y/*y좌표*/,
+	//		m_pBuilding[i].GetPosition().z/*z좌표*/,
+	//		m_fBuildingSize,/*크기*/
+	//		m_pBuilding[i].GetColor().r/*red*/, m_pBuilding[i].GetColor().g/*green*/, m_pBuilding[i].GetColor().b/*blue*/, m_pBuilding[i].GetColor().a/*alpha*/, m_Buildingtexture, 0.1);
+
+	//	g_Renderer->DrawSolidRectGauge(m_pBuilding[i].GetPosition().x/*x좌표*/,
+	//		m_pBuilding[i].GetPosition().y + 50/*y좌표*/,
+	//		m_pBuilding[i].GetPosition().z/*z좌표*/,
+	//		100, 10,
+	//		0, 0, 1, 1,
+	//		(float)m_pBuilding[i].GetLife() / (float)40, 0.2);
+	//}
+
+	for (int i = 0; i < m_nBuilding_NORTH; ++i) // 적 빌딩
 	{
 		g_Renderer->DrawTexturedRect(m_pBuilding_NORTH[i].GetPosition().x/*x좌표*/,
 			m_pBuilding_NORTH[i].GetPosition().y/*y좌표*/,
@@ -204,34 +262,35 @@ void Scene::Render()
 			m_pBuilding_NORTH[i].GetPosition().z/*z좌표*/,
 			100, 10,
 			1, 0, 0, 1,
-			(float)m_pBuilding_NORTH[i].GetLife() / (float)40, 0.2);
+			(float)m_pBuilding_NORTH[i].GetLife() / (float)BUILDING_LIFE, 0.2);
 	}
 
 	g_Renderer->DrawTexturedRect(0/*x좌표*/,
 		0/*y좌표*/,
 		0/*z좌표*/,
 		800,/*크기*/
-		1/*red*/, 1/*green*/, 1/*blue*/, 1/*alpha*/, m_BackGroundTexture, 0.99);
+		1/*red*/, 1/*green*/, 1/*blue*/, 1/*alpha*/, m_BackGroundTexture, 0.89);
 
 
 
 
 
-	for (int i = 0; i < m_nBuilding; ++i)
-	{
-		for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
-		{
-			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
-		}
-	}
+	//for (int i = 0; i < m_nBuilding; ++i) // 내꺼 빌딩이 쏘는 총알
+	//{
+	//	for (auto iter = m_pBuilding[i].m_listBullet.begin(); iter != m_pBuilding[i].m_listBullet.end(); ++iter)
+	//	{
+	//		g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
+	//		g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
+	//	}
+	//}
 
-	for (int i = 0; i < m_nBuilding_NORTH; ++i)
+	for (int i = 0; i < m_nBuilding_NORTH; ++i) //적 빌딩이 쏘는 총알
 	{
 		for (auto iter = m_pBuilding_NORTH[i].m_listBullet.begin(); iter != m_pBuilding_NORTH[i].m_listBullet.end(); ++iter)				
 		{
+			g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 20, 1, 1, 1, 1, m_MeteorTexture, 0.3);
+
 			g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fBulletSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
 		}
 	}
 
@@ -239,8 +298,33 @@ void Scene::Render()
 	{
 		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
 		{
+
+
+			if ((*iter)->m_iItemstate == ITEMSTATE_HP)
+			{
+				g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 50,1 ,1, 1, 1, m_ITEMSTATE_HPTexture,0.3);
+
+			}
+			if ((*iter)->m_iItemstate == ITEMSTATE_POWERUP)
+			{
+				g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 50, 1, 1,1,1, m_ITEMSTATE_PowerUpTexture, 0.3);
+
+			}
+			if ((*iter)->m_iItemstate == ITEMSTATE_CLEAR)
+			{
+				g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 50,1 ,1,1, 1, m_ITEMSTATE_ClearTexture, 0.3);
+
+			}
 			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
-			g_Renderer->DrawSolidRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, m_fArrowSize, (*iter)->GetColor().r, (*iter)->GetColor().g, (*iter)->GetColor().b, (*iter)->GetColor().a, 0.3);
+		}
+	}
+
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		for (auto iter = m_pObjects[i].m_listBaseArrow.begin(); iter != m_pObjects[i].m_listBaseArrow.end(); ++iter)
+		{
+			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, m_iScene_ElapsedTime / (float)1000);
+			g_Renderer->DrawTexturedRect((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 20, 1, 1, 1, 1,m_PlayerArrowTexture,0.3);
 		}
 	}
 
@@ -254,60 +338,73 @@ void Scene::Render()
 	}
 	g_Renderer->DrawText(0, 0, GLUT_BITMAP_TIMES_ROMAN_10, 1, 0, 0, "hellow");
 
-	for (int i = 0; i < 100; ++i)
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(0, 0, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		0.3, 0.1, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(0, 0, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		-0.3, -0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(100, 100, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		0, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(-100, -300, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		0.3, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(100, 100, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+	//for (int i = 0; i < 100; ++i)
+	//{
+	//	g_Renderer->DrawParticleClimate(-100, 100, 0,
+	//		0.5,
+	//		1, 1, 1, 1,
+	//		0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
+
+	//}
+
+
+	if (m_iGameState == GAMELOSE)
 	{
-		g_Renderer->DrawParticleClimate(0, 0, 0,
-			0.5,
-			1, 1, 1, 1,
-			0.3, 0.1, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
+		g_Renderer->DrawTexturedRect(0, 0, 0,
+			800, 1, 1, 1, 1, m_GameOver, 0.1);
+		
 	}
-
-	for (int i = 0; i < 100; ++i)
+	if (m_iGameState == GAMEWIN)
 	{
-		g_Renderer->DrawParticleClimate(0, 0, 0,
-			0.5,
-			1, 1, 1, 1,
-			-0.3, -0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
+		g_Renderer->DrawTexturedRect(0, 0, 0,
+			800, 1, 1, 1, 1, m_GameWin, 0.1);
+		
 	}
-
-	for (int i = 0; i < 100; ++i)
-	{
-		g_Renderer->DrawParticleClimate(100, 100, 0,
-			0.5,
-			1, 1, 1, 1,
-			0, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
-	}
-
-	for (int i = 0; i < 100; ++i)
-	{
-		g_Renderer->DrawParticleClimate(-100, -300, 0,
-			0.5,
-			1, 1, 1, 1,
-			0.3, 0.3, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
-	}
-
-	for (int i = 0; i < 100; ++i)
-	{
-		g_Renderer->DrawParticleClimate(100, 100, 0,
-			0.5,
-			1, 1, 1, 1,
-			0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
-	}
-
-	for (int i = 0; i < 100; ++i)
-	{
-		g_Renderer->DrawParticleClimate(-100, 100, 0,
-			0.5,
-			1, 1, 1, 1,
-			0.3, 0.0, m_SnowTexture, m_iScene_ElapsedTime / (float)1000, 0.05);
-
-	}
-
 }
 
 void Scene::Animate()
@@ -333,25 +430,31 @@ void Scene::Animate()
 		}
 
 	}*/
-	for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
-	{
-		if (m_pObjects[i].GetLifeTime() > OBJECT_DELETE_TIME)
-		{
-			m_pObjects[i].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
+	//for (int i = 0; i < MAX_OBJECTS_COUNT; ++i)
+	//{
+	//	if (m_pObjects[i].GetLifeTime() > OBJECT_DELETE_TIME)
+	//	{
+	//		m_pObjects[i].SetPosition(3853, 333333, 3333); // 이거 삭제로 바꿀것
 
-		}
-	}
+	//	}
+	//}
 	
-	for(int i = 0; i < m_nBuilding;++i)
+	/*for(int i = 0; i < m_nBuilding;++i)
 		m_pBuilding[i].BulletShot(OBJECT_BUILDING_SOUTH);
+*/
+
+
+	m_pBossMonster->BulletShot_BossMonster();
 
 	for (int i = 0; i < m_nBuilding_NORTH; ++i)
 		m_pBuilding_NORTH[i].BulletShot(OBJECT_BUILDING_NORTH);
 
+	bool player = true;
 	for (int i = 0; i < m_nObjects; ++i)
-		m_pObjects[i].BulletShot();
-	for (int i = 0; i < m_nObjects_NORTH; ++i)
-		m_pObjects_NORTH[i].BulletShot();
+		m_pObjects[i].BulletShot(player);
+	player = false;
+	//for (int i = 0; i < m_nObjects_NORTH; ++i)
+	//	m_pObjects_NORTH[i].BulletShot(player);
 
 }
 bool Scene::IsCollide(Object* pObject1, Object * pObject2,float distance)
@@ -450,6 +553,82 @@ void Scene::ColideDetection()
 		}
 	}
 
+	////////////// 플레이어와 블랙홀 충돌
+
+	for (int i = 0; i < m_nObjects; i++)
+	{
+		for (int j = 0; j < m_nObjects_NORTH; j++) //충돌체크 i= i끼리 할필요없고 i랑j 했으면 j랑i는 할필요 없어서 이렇게 for문 돌리는거임
+		{
+			if (IsCollide(&m_pObjects[i], &m_pObjects_NORTH[j], 50))
+			{
+				if (m_bCollideState == false)
+				{
+					//cout << m_pObjects[0].GetLife() << endl;
+
+					FLOAT3 swapDirection;
+					swapDirection.x = m_pObjects[i].GetDirection().x ;
+					swapDirection.y = m_pObjects[i].GetDirection().y;
+					swapDirection.z = m_pObjects[i].GetDirection().z;
+
+					m_pObjects[i].SetDirection(m_pObjects_NORTH[j].GetDirection());
+					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * m_pObjects_NORTH[j].GetDirection().x, m_pObjects[i].GetPosition().y + 10 * m_pObjects_NORTH[j].GetDirection().y, m_pObjects[i].GetPosition().z + 10 * m_pObjects_NORTH[j].GetDirection().z);
+
+					m_pObjects_NORTH[j].SetDirection(swapDirection);
+					m_pObjects_NORTH[j].SetPosition(9999, m_pObjects_NORTH[j].GetPosition().y + 10 * swapDirection.y, m_pObjects_NORTH[j].GetPosition().z + 10 * swapDirection.z);
+
+					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+					/*m_pObjects[i].SetColor(255, 0, 0, 1);
+					m_pObjects[j].SetColor(255, 0, 0, 1);*/
+					//++m_iCollideCnt;
+
+					//cout << m_iCollideCnt << endl;
+
+					m_bCollideState = true;
+				}
+				else
+				{
+					m_bCollideState = false;
+
+				}
+			}
+		}
+	}
+
+
+
+
+	//////////////
+	//플레이어와 보스 몬스터 총알 충돌
+	for (int i = 0; i < m_nObjects; ++i)
+	{
+		for (auto iter = m_pBossMonster->m_listArrow.begin(); iter != m_pBossMonster->m_listArrow.end(); ++iter)
+		{
+			float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+			if (Distance < 25)
+			{
+				(*iter)->SetPosition(9999, 0, 0);
+				m_pObjects[i].IncreaseLife(-(*iter)->GetLife());
+
+				if (m_pObjects[i].GetLife() <= 0)
+				{
+					if (m_iGameState == GAMEPLAY)
+					m_iGameState = GAMELOSE;
+				}
+			}
+			//g_Renderer->DrawParticle((*iter)->GetPosition().x, (*iter)->GetPosition().y, (*iter)->GetPosition().z, 10, 1, 1, 1, 1, -((*iter)->GetDirection().x), -((*iter)->GetDirection().y), m_ParticleTextureBullet, (*iter)->m_iScene_ElapsedTime / (float)1000,0.4);
+		}
+	}
+
+
+
+	////////////////
+
+
+
+
 	//for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
 	//{
 	//	for (int j = 0; j < m_nBuilding; j++)
@@ -469,48 +648,48 @@ void Scene::ColideDetection()
 	//	}
 	//}
 
-	for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
-	{
-		for (int j = 0; j < m_nBuilding_NORTH; j++)
-		{
-			if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize / (float)2))
-			{
+	//for (int i = 0; i < m_nObjects; i++) //빌딩과 캐릭터 충돌
+	//{
+	//	for (int j = 0; j < m_nBuilding_NORTH; j++)
+	//	{
+	//		if (IsCollide(&m_pObjects[i], &m_pBuilding_NORTH[j], m_fBuildingSize / (float)2))
+	//		{
 
-				m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-				m_pBuilding_NORTH[j].DamageAnimate();
-				if (m_pBuilding_NORTH[j].GetLife() > 0)
-					m_pBuilding_NORTH[j].IncreaseLife(-CHARACTER_LIFE);
-				if (m_pBuilding_NORTH[j].GetLife() <= 0)
-				{
-					m_pBuilding_NORTH[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//			m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//			m_pBuilding_NORTH[j].DamageAnimate();
+	//			if (m_pBuilding_NORTH[j].GetLife() > 0)
+	//				m_pBuilding_NORTH[j].IncreaseLife(-CHARACTER_LIFE);
+	//			if (m_pBuilding_NORTH[j].GetLife() <= 0)
+	//			{
+	//				m_pBuilding_NORTH[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
-				}
-			}
-		}
-	}
+	//			}
+	//		}
+	//	}
+	//}
 
-	for (int i = 0; i < m_nObjects_NORTH; i++) //빌딩과 캐릭터_NORTH 충돌
-	{
-		for (int j = 0; j < m_nBuilding; j++)
-		{
-			if (IsCollide(&m_pObjects_NORTH[i], &m_pBuilding[j], m_fBuildingSize / (float)2))
-			{
+	//for (int i = 0; i < m_nObjects_NORTH; i++) //빌딩과 캐릭터_NORTH 충돌
+	//{
+	//	for (int j = 0; j < m_nBuilding; j++)
+	//	{
+	//		if (IsCollide(&m_pObjects_NORTH[i], &m_pBuilding[j], m_fBuildingSize / (float)2))
+	//		{
 
-				m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-				m_pBuilding[j].DamageAnimate();
-				if (m_pBuilding[j].GetLife() > 0)
-					m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
-				if (m_pBuilding[j].GetLife() <= 0)
-				{
-					m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//			m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//			m_pBuilding[j].DamageAnimate();
+	//			if (m_pBuilding[j].GetLife() > 0)
+	//				m_pBuilding[j].IncreaseLife(-CHARACTER_LIFE);
+	//			if (m_pBuilding[j].GetLife() <= 0)
+	//			{
+	//				m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
-				}
-			}
-		}
-	}
+	//			}
+	//		}
+	//	}
+	//}
 
 
-	//for (int i = 0; i < m_nObjects; ++i) //빌딩의총알과 오브젝트 충돌
+	//for (int i = 0; i < m_nObjects; ++i)  
 	//{
 	//	for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
 	//	{
@@ -566,146 +745,163 @@ void Scene::ColideDetection()
 
 	for (int i = 0; i < m_nObjects; ++i) //빌딩_NORTH 총알과 오브젝트 충돌
 	{
-		for (auto iter = m_pBuilding_NORTH->m_listBullet.begin(); iter != m_pBuilding_NORTH->m_listBullet.end(); ++iter)
+		for (int j = 0; j < m_nBuilding; ++j)
 		{
-			float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
-
-			if (Distance < m_fObjectSize)
+			for (auto iter = m_pBuilding_NORTH[j].m_listBullet.begin(); iter != m_pBuilding_NORTH[j].m_listBullet.end(); ++iter)
 			{
-				if (m_bCollideState_Bullet == false)
+				float Distance = sqrt(pow((m_pObjects[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+
+				if (Distance < m_fObjectSize)
 				{
-					//cout << m_pObjects[0].GetLife() << endl;
-
-					FLOAT3 swapDirection;
-					swapDirection.x = m_pObjects[i].GetDirection().x;
-					swapDirection.y = m_pObjects[i].GetDirection().y;
-					swapDirection.z = m_pObjects[i].GetDirection().z;
-
-					m_pObjects[i].SetDirection((*iter)->GetDirection());
-					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
-					m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
-
-					//.
-
-					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
-					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
-
-
-					//++m_iCollideCnt;
-
-					//cout << m_iCollideCnt << endl;
-
-					if (m_pObjects[i].GetLife() > 0)
-					m_pObjects[i].IncreaseLife(-BULLET_LIFE);
-
-
-					if (m_pObjects[i].GetLife() <= 0)
+					if (m_bCollideState_Bullet == false)
 					{
-						m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+						//cout << m_pObjects[0].GetLife() << endl;
+
+						FLOAT3 swapDirection;
+						swapDirection.x = m_pObjects[i].GetDirection().x ;
+						swapDirection.y = m_pObjects[i].GetDirection().y ;
+						swapDirection.z = m_pObjects[i].GetDirection().z ;
+
+						//FLOAT3 newDirection;
+						//newDirection.x = (*iter)->GetDirection().x * 0.3;
+						//newDirection.y = (*iter)->GetDirection().y * 0.3;
+						//newDirection.z = (*iter)->GetDirection().z * 0.3;
+
+						//m_pObjects[i].SetDirection(newDirection);
+						//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+						m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
+
+						//.
+
+						//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+						//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+
+						//++m_iCollideCnt;
+
+						//cout << m_iCollideCnt << endl;
+
+					
+						if (m_pObjects[i].GetLife() > 0)
+							m_pObjects[i].IncreaseLife(-BULLET_LIFE);
+
+
+						if (m_pObjects[i].GetLife() <= 0)
+						{
+							m_pObjects[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+						}
+
+
+						if (m_pObjects[i].GetLife() <= 0)
+						{
+							if (m_iGameState == GAMEPLAY)
+							m_iGameState = GAMELOSE;
+						}
+				
+						m_bCollideState_Bullet = true;
+						(*iter)->SetPosition(33333, 34433, 33333);
+
 					}
-
-					m_bCollideState_Bullet = true;
-					(*iter)->SetPosition(33333, 34433, 33333);
-
-				}
-				else
-				{
-					m_bCollideState_Bullet = false;
-
-				}
-			}
-		}
-	}
-
-	//빌딩 총알과 OBJECT_NORT 충돌 체크
-	for (int i = 0; i < m_nObjects_NORTH; ++i) //빌딩_NORTH 총알과 오브젝트 충돌
-	{
-		for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
-		{
-			float Distance = sqrt(pow((m_pObjects_NORTH[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects_NORTH[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects_NORTH[i].GetPosition().z - (*iter)->GetPosition().z), 2));
-
-			if (Distance < m_fObjectSize)
-			{
-				if (m_bCollideState_Bullet_NORTH == false)
-				{
-					//cout << m_pObjects[0].GetLife() << endl;
-
-					FLOAT3 swapDirection;
-					swapDirection.x = m_pObjects_NORTH[i].GetDirection().x;
-					swapDirection.y = m_pObjects_NORTH[i].GetDirection().y;
-					swapDirection.z = m_pObjects_NORTH[i].GetDirection().z;
-
-					m_pObjects_NORTH[i].SetDirection((*iter)->GetDirection());
-					//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
-					m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects_NORTH[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects_NORTH[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
-
-					//.
-
-					//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
-					//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
-
-
-					//++m_iCollideCnt;
-
-					//cout << m_iCollideCnt << endl;
-
-					if (m_pObjects_NORTH[i].GetLife() > 0)
-						m_pObjects_NORTH[i].IncreaseLife(-BULLET_LIFE);
-
-
-					if (m_pObjects_NORTH[i].GetLife() <= 0)
+					else
 					{
-						m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-					}
-
-					m_bCollideState_Bullet_NORTH = true;
-					(*iter)->SetPosition(33333, 34433, 33333);
-
-				}
-				else
-				{
-					m_bCollideState_Bullet_NORTH = false;
-
-				}
-			}
-		}
-	}
-
-
-
-	//오브젝트_NORTH 쏜 Arrow랑 Building 충돌 검사
-	for (int i = 0; i < m_nObjects_NORTH; ++i)
-	{
-		for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
-		{
-			for (int j = 0; j < m_nBuilding; ++j)
-			{
-				float Distance = sqrt(pow((m_pBuilding[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pBuilding[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pBuilding[j].GetPosition().z - (*iter)->GetPosition().z), 2));
-				if (Distance < 25)
-				{
-					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-					m_pBuilding[j].DamageAnimate();
-
-					if (m_pBuilding[j].GetLife() > 0)
-					m_pBuilding[j].IncreaseLife(-ARROW_LIFE);
-					if (m_pBuilding[j].GetLife() <= 0)
-					{
-						m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+						m_bCollideState_Bullet = false;
 
 					}
 				}
-				//cout << "무한 " << endl;
-
 			}
-
-
 		}
+	
 	}
+
+	////빌딩 총알과 OBJECT_NORT 충돌 체크
+	//for (int i = 0; i < m_nObjects_NORTH; ++i) //빌딩_NORTH 총알과 오브젝트 충돌
+	//{
+	//	for (auto iter = m_pBuilding->m_listBullet.begin(); iter != m_pBuilding->m_listBullet.end(); ++iter)
+	//	{
+	//		float Distance = sqrt(pow((m_pObjects_NORTH[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects_NORTH[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects_NORTH[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+
+	//		if (Distance < m_fObjectSize)
+	//		{
+	//			if (m_bCollideState_Bullet_NORTH == false)
+	//			{
+	//				//cout << m_pObjects[0].GetLife() << endl;
+
+	//				FLOAT3 swapDirection;
+	//				swapDirection.x = m_pObjects_NORTH[i].GetDirection().x;
+	//				swapDirection.y = m_pObjects_NORTH[i].GetDirection().y;
+	//				swapDirection.z = m_pObjects_NORTH[i].GetDirection().z;
+
+	//				m_pObjects_NORTH[i].SetDirection((*iter)->GetDirection());
+	//				//m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 2 *m_pObjects[j].GetDirection().x, m_pObjects[i].GetPosition().y + 2 * m_pObjects[j].GetDirection().y, m_pObjects[i].GetPosition().z + 2 * m_pObjects[j].GetDirection().z);
+	//				m_pObjects_NORTH[i].SetPosition(m_pObjects_NORTH[i].GetPosition().x + 10 * (*iter)->GetDirection().x, m_pObjects_NORTH[i].GetPosition().y + 10 * (*iter)->GetDirection().y, m_pObjects_NORTH[i].GetPosition().z + 10 * (*iter)->GetDirection().z);
+
+	//				//.
+
+	//				//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(),m_pObjects[j].GetDirection()));
+	//				//m_pObjects[j].SetDirection(Reflect(m_pObjects[j].GetDirection(),swapDirection));
+
+
+	//				//++m_iCollideCnt;
+
+	//				//cout << m_iCollideCnt << endl;
+
+	//				if (m_pObjects_NORTH[i].GetLife() > 0)
+	//					m_pObjects_NORTH[i].IncreaseLife(-BULLET_LIFE);
+
+
+	//				if (m_pObjects_NORTH[i].GetLife() <= 0)
+	//				{
+	//					m_pObjects_NORTH[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//				}
+
+	//				m_bCollideState_Bullet_NORTH = true;
+	//				(*iter)->SetPosition(33333, 34433, 33333);
+
+	//			}
+	//			else
+	//			{
+	//				m_bCollideState_Bullet_NORTH = false;
+
+	//			}
+	//		}
+	//	}
+	//}
+
+
+
+	////오브젝트_NORTH 쏜 Arrow랑 Building 충돌 검사
+	//for (int i = 0; i < m_nObjects_NORTH; ++i)
+	//{
+	//	for (auto iter = m_pObjects_NORTH[i].m_listArrow.begin(); iter != m_pObjects_NORTH[i].m_listArrow.end(); ++iter)
+	//	{
+	//		for (int j = 0; j < m_nBuilding; ++j)
+	//		{
+	//			float Distance = sqrt(pow((m_pBuilding[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pBuilding[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pBuilding[j].GetPosition().z - (*iter)->GetPosition().z), 2));
+	//			if (Distance < 25)
+	//			{
+	//				(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//				m_pBuilding[j].DamageAnimate();
+
+	//				if (m_pBuilding[j].GetLife() > 0)
+	//				m_pBuilding[j].IncreaseLife(-ARROW_LIFE);
+	//				if (m_pBuilding[j].GetLife() <= 0)
+	//				{
+	//					m_pBuilding[j].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+	//				}
+	//			}
+	//			//cout << "무한 " << endl;
+
+	//		}
+
+
+	//	}
+	//}
 
 	//플레이어가 쏜 Arrow랑 Building)NORTH 충돌 검사
 	for (int i = 0; i < m_nObjects; ++i)
 	{
-		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		for (auto iter = m_pObjects[i].m_listBaseArrow.begin(); iter != m_pObjects[i].m_listBaseArrow.end(); ++iter)
 		{
 			for (int j = 0; j < m_nBuilding_NORTH; ++j)
 			{
@@ -735,12 +931,12 @@ void Scene::ColideDetection()
 	//플레이어가 쏜 Arrow랑 오브젝트_NORTH끼리 충돌검사
 	for (int i = 0; i < m_nObjects; ++i)
 	{
-		for (auto iter = m_pObjects[i].m_listArrow.begin(); iter != m_pObjects[i].m_listArrow.end(); ++iter)
+		for (auto iter = m_pObjects[i].m_listBaseArrow.begin(); iter != m_pObjects[i].m_listBaseArrow.end(); ++iter)
 		{
 			for (int j = 0; j < m_nObjects_NORTH; ++j)
 			{
 				float Distance = sqrt(pow((m_pObjects_NORTH[j].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects_NORTH[j].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects_NORTH[j].GetPosition().z - (*iter)->GetPosition().z), 2));
-				if (Distance < 15 &&	i!=j/*m_pObjects[i].GetPosition().x != m_pObjects[j].GetPosition().x && m_pObjects[i].GetPosition().y != m_pObjects[j].GetPosition().y*/)
+				if (Distance < 15/*m_pObjects[i].GetPosition().x != m_pObjects[j].GetPosition().x && m_pObjects[i].GetPosition().y != m_pObjects[j].GetPosition().y*/)
 				{
 					(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
 
@@ -761,7 +957,28 @@ void Scene::ColideDetection()
 		}
 	}
 
+	//아이템과 플레이어 충돌
+	for (auto iter = m_pObjects[0].m_listArrow.begin(); iter != m_pObjects[0].m_listArrow.end(); ++iter)
+	{
 
+		float Distance = sqrt(pow((m_pObjects[0].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pObjects[0].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pObjects[0].GetPosition().z - (*iter)->GetPosition().z), 2));
+		if (Distance < 15/*m_pObjects[i].GetPosition().x != m_pObjects[j].GetPosition().x && m_pObjects[i].GetPosition().y != m_pObjects[j].GetPosition().y*/)
+		{
+			(*iter)->SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+
+			if ((*iter)->m_iItemstate == ITEMSTATE_HP)
+			{
+				m_pObjects[0].IncreaseLife(30);
+
+			}
+
+		}
+		//cout << "무한 " << endl;
+
+	}
+
+
+	
 
 	//빌딩 총알과 빌딩 충돌체크
 	//1. 빌딩이 쏜 총알이 빌딩_NORTH와 충돌한경우
@@ -806,46 +1023,46 @@ void Scene::ColideDetection()
 
 
 
-	//2. 빌딩_NORTH가 쏜 총알이 빌딩과 충돌한 경우
-	for (int i = 0; i < m_nBuilding; ++i) //빌딩의총알과 오브젝트 충돌
-	{
-		for (int j = 0; j < m_nBuilding_NORTH; ++j)
-		{
-			for (auto iter = m_pBuilding_NORTH[j].m_listBullet.begin(); iter != m_pBuilding_NORTH[j].m_listBullet.end(); ++iter)
-			{
-				float Distance = sqrt(pow((m_pBuilding[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pBuilding[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pBuilding[i].GetPosition().z - (*iter)->GetPosition().z), 2));
+	////2. 빌딩_NORTH가 쏜 총알이 빌딩과 충돌한 경우
+	//for (int i = 0; i < m_nBuilding; ++i) //빌딩의총알과 오브젝트 충돌
+	//{
+	//	for (int j = 0; j < m_nBuilding_NORTH; ++j)
+	//	{
+	//		for (auto iter = m_pBuilding_NORTH[j].m_listBullet.begin(); iter != m_pBuilding_NORTH[j].m_listBullet.end(); ++iter)
+	//		{
+	//			float Distance = sqrt(pow((m_pBuilding[i].GetPosition().x - (*iter)->GetPosition().x), 2) + pow((m_pBuilding[i].GetPosition().y - (*iter)->GetPosition().y), 2) + pow((m_pBuilding[i].GetPosition().z - (*iter)->GetPosition().z), 2));
 
-				if (Distance < 20)
-				{
-					if (m_bCollideState_BuildingNorthBullet_Building == false)
-					{
-						//cout << m_pObjects[0].GetLife() << endl;
-						cout << "북쪽에서 쏜 총알에 남쪽이이 맞았습니다." << endl;
-
-
-						if (m_pBuilding[i].GetLife() > 0)
-						m_pBuilding[i].IncreaseLife(-BULLET_LIFE);
+	//			if (Distance < 20)
+	//			{
+	//				if (m_bCollideState_BuildingNorthBullet_Building == false)
+	//				{
+	//					//cout << m_pObjects[0].GetLife() << endl;
+	//					cout << "북쪽에서 쏜 총알에 남쪽이이 맞았습니다." << endl;
 
 
-						if (m_pBuilding[i].GetLife() <= 0)
-						{
-							m_pBuilding[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
-						}
+	//					if (m_pBuilding[i].GetLife() > 0)
+	//					m_pBuilding[i].IncreaseLife(-BULLET_LIFE);
 
-						m_bCollideState_BuildingNorthBullet_Building = true;
-						(*iter)->SetPosition(33333, 34433, 33333);
 
-					}
-					else
-					{
-						m_bCollideState_BuildingNorthBullet_Building = false;
+	//					if (m_pBuilding[i].GetLife() <= 0)
+	//					{
+	//						m_pBuilding[i].SetPosition(3333, 333333, 3333); // 이거 삭제로 바꿀것
+	//					}
 
-					}
-				}
-			}
-		}
-		
-	}
+	//					m_bCollideState_BuildingNorthBullet_Building = true;
+	//					(*iter)->SetPosition(33333, 34433, 33333);
+
+	//				}
+	//				else
+	//				{
+	//					m_bCollideState_BuildingNorthBullet_Building = false;
+
+	//				}
+	//			}
+	//		}
+	//	}
+	//	
+	//}
 
 
 }
@@ -878,7 +1095,9 @@ void Scene::ReflectDetection()
 		//cout << m_pObjects[i].GetPosition().y << endl;
 		if (m_pObjects[i].GetPosition().y > WINDOW_HEIGHT / 2 )
 		{
-			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xup));
+			//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xup));
+			m_pObjects[i].SetDirection(0, 0, 0);
+
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x, m_pObjects[i].GetPosition().y - 1, m_pObjects[i].GetPosition().z);
 
 		}
@@ -886,21 +1105,27 @@ void Scene::ReflectDetection()
 		//cout << m_pObjects[i].GetPosition().y << endl;
 		if (m_pObjects[i].GetPosition().y < -WINDOW_HEIGHT / 2)
 		{
-			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xdown));
+			//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), xdown));
+			m_pObjects[i].SetDirection(0, 0, 0);
+
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x, m_pObjects[i].GetPosition().y + 1, m_pObjects[i].GetPosition().z);
 
 		}
 
 		if (m_pObjects[i].GetPosition().x < -WINDOW_WIDTH/2)
 		{
-			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yleft));
+			//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yleft));
+			m_pObjects[i].SetDirection(0, 0, 0);
+
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x + 1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
 
 		}
 
 		if (m_pObjects[i].GetPosition().x > WINDOW_WIDTH / 2)
 		{
-			m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yright));
+			//m_pObjects[i].SetDirection(Reflect(m_pObjects[i].GetDirection(), yright));
+			m_pObjects[i].SetDirection(0, 0, 0);
+
 			m_pObjects[i].SetPosition(m_pObjects[i].GetPosition().x - 1, m_pObjects[i].GetPosition().y, m_pObjects[i].GetPosition().z);
 
 		}
@@ -1012,9 +1237,8 @@ void Scene::AddActorObject(float x, float y, int objectType)
 			
 				m_pObjects[m_nObjects].SetPosition(x, y, 0);
 
-
 				cout << m_pObjects[m_nObjects].GetPosition().x << "\t" << m_pObjects[m_nObjects].GetPosition().y << endl << "\t" << "유후" << endl;
-				m_pObjects[m_nObjects].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX) - 0.5f), 0);
+				//m_pObjects[m_nObjects].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX) - 0.5f), 0);
 				m_pObjects[m_nObjects].SetLife(CHARACTER_LIFE);
 				//m_pObjects[m_nObjects].SetLifeTime(clock());
 
@@ -1043,7 +1267,7 @@ void Scene::AddActorObject(float x, float y, int objectType)
 			//m_pObjects_NORTH[m_nObjects_NORTH].SetPosition((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX) - 0.5f), 0);
 			m_pObjects_NORTH[m_nObjects_NORTH].SetPosition((200 * ((float)std::rand() / (float)RAND_MAX) - 0.5f), (360 * ((float)std::rand() / (float)RAND_MAX)), 0);
 
-			m_pObjects_NORTH[m_nObjects_NORTH].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f), (((float)std::rand() / (float)RAND_MAX)), 0);
+			m_pObjects_NORTH[m_nObjects_NORTH].SetDirection((((float)std::rand() / (float)RAND_MAX) - 0.5f) *2.0f, (((float)std::rand() / (float)RAND_MAX) - 0.5f)*2.0f, 0);
 			m_pObjects_NORTH[m_nObjects_NORTH].SetLife(CHARACTER_LIFE);
 			m_pObjects_NORTH[m_nObjects_NORTH].SetColor(0, 0, 1, 1);
 			m_nObjects_NORTH++;

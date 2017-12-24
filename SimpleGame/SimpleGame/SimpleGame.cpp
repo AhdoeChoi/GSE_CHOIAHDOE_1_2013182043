@@ -24,7 +24,7 @@ Scene * pScene = NULL;
 DWORD CurrentTime;
 
 int ClickCnt = 0;
-
+bool bShootState = false;
 void RenderScene(void)
 {
 
@@ -46,6 +46,65 @@ void RenderScene(void)
 	}
 	
 
+//////////////////////////////////////Å°ÀÔ·Â
+
+
+
+	UCHAR pKeyBuffer[256];
+	DWORD dwDirection = 0;
+
+	if (::GetKeyboardState(pKeyBuffer))
+	{
+		if (pKeyBuffer[VK_UP] & 0xF0)
+			pScene->m_pObjects->m_f3Position.y += 10 * elapsedTime * 0.03;
+		if (pKeyBuffer[VK_DOWN] & 0xF0)
+			pScene->m_pObjects->m_f3Position.y -= 10 * elapsedTime * 0.03;
+		if (pKeyBuffer[VK_LEFT] & 0xF0)
+			pScene->m_pObjects->m_f3Position.x -= 10 * elapsedTime * 0.03;
+		if (pKeyBuffer[VK_RIGHT] & 0xF0)
+			pScene->m_pObjects->m_f3Position.x += 10 * elapsedTime * 0.03;
+		if (pKeyBuffer[VK_SPACE] & 0xF0)
+		{
+			if (!bShootState)
+			{
+
+				Arrow *arrow = new Arrow;
+
+			
+				FLOAT3 dirVector;
+				dirVector.x = 0;
+				dirVector.y = 1;
+				dirVector.z = 0;
+
+				//dirVector = Vector3::Normalize(dirVector);
+
+
+				arrow->SetColor(0, 1, 0, 1);
+				arrow->SetDirection(dirVector.x, dirVector.y, 0);
+				arrow->SetLife(ARROW_LIFE);
+				arrow->SetPosition(pScene->m_pObjects->GetPosition());
+
+				pScene->m_pObjects->m_listBaseArrow.push_back(arrow);
+
+
+
+				bShootState = true;
+			}
+			else
+			{
+
+			}
+		}
+		else
+		{
+
+			bShootState = false;
+		}
+	}
+
+
+/////////////////////////////////////////
+
 
 	glutSwapBuffers();
 }
@@ -57,17 +116,17 @@ void Idle(void)
 
 void MouseInput(int button, int state, int x, int y)
 {
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
-	{
-		
-			//pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
-			cout << x << "\t" << y << endl;
+	//if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN)
+	//{
+	//	
+	//		//pScene->m_pObjects->SetPosition(x - 300, -y + 300, 0);
+	//		cout << x << "\t" << y << endl;
 
-			pScene->AddActorObject(x - WINDOW_WIDTH/2, - y + WINDOW_HEIGHT/2, OBJECT_CHARACTER);
-		
-	 
-		//ClickCnt++;
-	}
+	//		pScene->AddActorObject(x - WINDOW_WIDTH/2, - y + WINDOW_HEIGHT/2, OBJECT_CHARACTER);
+	//	
+	// 
+	//	//ClickCnt++;
+	//}
 
 	RenderScene();
 }

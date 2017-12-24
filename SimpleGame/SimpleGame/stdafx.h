@@ -13,13 +13,22 @@
 using namespace std;
 
 #define PLAYERVELOCITY 3
-#define MAX_OBJECTS_COUNT 10
+#define MAX_OBJECTS_COUNT 50
 #define MAX_BUILDING_COUNT 3
 #define OBJECT_DELETE_TIME 20
 #define BULLET_LIFE 20
-#define CHARACTER_LIFE 10
-#define BUILDING_LIFE 40
+#define CHARACTER_LIFE 100
+#define BUILDING_LIFE 500
 #define ARROW_LIFE 10
+
+#define DIR_LEFT			0x04
+#define DIR_RIGHT			0x08
+#define DIR_UP				0x10
+#define DIR_DOWN			0x20
+
+#define GAMEPLAY 0
+#define GAMELOSE 1
+#define GAMEWIN 2
 //enum
 //{
 //	OBJECT_BUILDING = 0,
@@ -40,6 +49,10 @@ using namespace std;
 
 #define WINDOW_WIDTH 500
 #define WINDOW_HEIGHT 800
+
+#define ITEMSTATE_HP 1
+#define ITEMSTATE_POWERUP 2
+#define ITEMSTATE_CLEAR 3
 
 typedef struct float3
 {

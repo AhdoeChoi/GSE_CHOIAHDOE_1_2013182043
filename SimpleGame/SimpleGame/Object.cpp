@@ -16,7 +16,7 @@ Object::Object()
 	m_f4Color.b = 1.0f;
 	m_f4Color.a = 1.0f;
 
-	m_iLife = 15;
+	m_iLife = CHARACTER_LIFE;
 
 	m_fLifeTime = 0;
 
@@ -30,7 +30,6 @@ Object::~Object()
 
 void Object::Update(DWORD elapsedTime)
 {
-	
 
 }
 
@@ -40,6 +39,7 @@ void Object::Update(DWORD elapsedTime)
 Player::Player()
 {
 	m_fShootTimer_Arrow = 0;
+	m_fShootTimer_Arrow_BOSMONSTER = 0;
 }
 Player::~Player()
 {
@@ -47,9 +47,9 @@ Player::~Player()
 }
 void Player::DamageAnimate()
 {
-
+	
 }
-void Player::BulletShot()
+void Player::BulletShot(bool player)
 {
 	if (m_bShootState_Arrow == true)
 	{
@@ -57,20 +57,129 @@ void Player::BulletShot()
 	
 
 		FLOAT3 dirVector;
-		dirVector.x =/* 2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
-		dirVector.y = /*2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f);
+		dirVector.x =/* 2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f) * 0.1;
+		dirVector.y = /*2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f)* 0.1;
 		dirVector.z = 0;
 
 		//dirVector = Vector3::Normalize(dirVector);
+		FLOAT3 ItemPosition;
 
+		if (player == true)
+		{
+			ItemPosition.x = this->GetPosition().x + (((float)std::rand() / (float)RAND_MAX) - 0.5f) * 40;
+			ItemPosition.y = this->GetPosition().y + (((float)std::rand() / (float)RAND_MAX) - 0.5f) * 40;
+			ItemPosition.z = 0;
+		}
+		else
+		{
+			ItemPosition.x = this->GetPosition().x ;
+			ItemPosition.y = this->GetPosition().y ;
+			ItemPosition.z = 0;
+		}
+		
 
 		arrow->SetColor(0, 1, 0, 1);
 		arrow->SetDirection(dirVector.x, dirVector.y, 0);
 		arrow->SetLife(ARROW_LIFE);
-		arrow->SetPosition(this->GetPosition());
-
+		arrow->SetPosition(ItemPosition);
+		arrow->m_iItemstate = ITEMSTATE_HP;
+	
 		m_listArrow.push_back(arrow);
 	}
+}
+
+void Player::BulletShot_BossMonster()
+{
+	float3 position;
+
+	position.x = 0;
+	position.y = 0;
+	position.z = 0;
+
+	int vecx = 0;
+	int vecy = 0;
+
+	int bulletstate = rand() % 2;
+
+
+	if (m_bShootState_Arrow_BOSMONSTER == true)
+	{
+		switch (bulletstate)
+		{
+		case 0:
+			for (int j = 0; j < 36; j++)
+			{
+				position.x = this->GetPosition().x - 10 * cos((45 + j * 10)*3.14 / 180) * this->GetPosition().y / abs(this->GetPosition().y);
+				position.y = this->GetPosition().y - 10 * sin((45 + j * 10)*3.14 / 180) * this->GetPosition().y / abs(this->GetPosition().y);
+
+				vecx = position.x - this->GetPosition().x;
+				vecy = position.y - this->GetPosition().y;
+
+				Arrow *arrow = new Arrow;
+
+				FLOAT3 dirVector;
+				dirVector.x = vecx * 0.01;
+				dirVector.y = vecy * 0.01;
+				dirVector.z = 0;
+
+				arrow->SetColor(0, 1, 0, 1);
+				arrow->SetDirection(dirVector.x, dirVector.y, 0);
+				arrow->SetLife(ARROW_LIFE);
+				arrow->SetPosition(this->GetPosition());
+
+				m_listArrow.push_back(arrow);
+
+			}
+			break;
+		case 1:
+			for (int j = 0; j < 6; j++)
+			{
+				position.x = this->GetPosition().x - (((50 - (20 * j))* this->GetPosition().y / abs(this->GetPosition().y))* this->GetPosition().y / abs(this->GetPosition().y));
+				position.y = this->GetPosition().y - 10 * this->GetPosition().y / abs(this->GetPosition().y);
+
+				vecx = 0;
+				vecy = position.y - this->GetPosition().y;
+
+				Arrow *arrow = new Arrow;
+
+				FLOAT3 dirVector;
+				dirVector.x = vecx * 0.01;
+				dirVector.y = vecy * 0.01;
+				dirVector.z = 0;
+
+				arrow->SetColor(0, 1, 0, 1);
+				arrow->SetDirection(dirVector.x, dirVector.y, 0);
+				arrow->SetLife(ARROW_LIFE);
+				arrow->SetPosition(position.x, position.y,0);
+
+				m_listArrow.push_back(arrow);
+
+			}
+			break;
+		case 2:
+			break;
+		}
+		//Arrow *arrow = new Arrow;
+
+
+		//FLOAT3 dirVector;
+		//dirVector.x =/* 2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f) * 0.1;
+		//dirVector.y = /*2.0f **/(((float)std::rand() / (float)RAND_MAX) - 0.5f)* 0.1;
+		//dirVector.z = 0;
+
+		////dirVector = Vector3::Normalize(dirVector);
+		//arrow->SetColor(0, 1, 0, 1);
+		//arrow->SetDirection(dirVector.x, dirVector.y, 0);
+		//arrow->SetLife(ARROW_LIFE);
+		//arrow->SetPosition(this->GetPosition());
+
+		//m_listArrow.push_back(arrow);
+
+		/////////////////////
+
+	
+	}
+
 }
 
 void Player::ArrowShot()
@@ -80,6 +189,7 @@ void Player::ArrowShot()
 
 void Player::Update(DWORD elapsedTime)
 {
+
 	//m_f3Position.x += 1 * m_f3Direction.x;
 	//m_f3Position.y += 1 * m_f3Direction.y;
 
@@ -102,11 +212,19 @@ void Player::Update(DWORD elapsedTime)
 		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
 	}
 
+	for (auto iter = m_listBaseArrow.begin(); iter != m_listBaseArrow.end(); ++iter)
+	{
+		(*iter)->m_f3Position.x += elapsedTime * (*iter)->m_f3Direction.x;
+		(*iter)->m_f3Position.y += elapsedTime * (*iter)->m_f3Direction.y;
+	}
+
 	//cout << m_fLifeTime << endl;
 
 	m_fShootTimer_Arrow += elapsedTime;
+	m_fShootTimer_Arrow_BOSMONSTER += elapsedTime;
+
 	//cout << m_fShootTimer_Arrow << endl;
-	if ((float)m_fShootTimer_Arrow / (float)1000 > 3.0f)
+	if ((float)m_fShootTimer_Arrow / (float)1000 > 10.0f)
 	{
 		m_bShootState_Arrow = true;
 		m_fShootTimer_Arrow = 0;
@@ -116,6 +234,18 @@ void Player::Update(DWORD elapsedTime)
 		m_bShootState_Arrow= false;
 	}
 
+	/////////////////
+
+	if ((float)m_fShootTimer_Arrow_BOSMONSTER / (float)1000 > 5.0f)
+	{
+		m_bShootState_Arrow_BOSMONSTER = true;
+		m_fShootTimer_Arrow_BOSMONSTER = 0;
+	}
+	else
+	{
+		m_bShootState_Arrow_BOSMONSTER = false;
+	}
+	
 }
 
 
@@ -242,7 +372,7 @@ void Building::Update(DWORD elapsedTime)
 	m_fShootTimer_Bullet += elapsedTime;
 	
 
-	if ((float)m_fShootTimer_Bullet / (float)1000 > 10.0f)
+	if ((float)m_fShootTimer_Bullet / (float)1000 > 1.5f)
 	{
 		m_bShootState_Bullet = true;
 		m_fShootTimer_Bullet = 0;

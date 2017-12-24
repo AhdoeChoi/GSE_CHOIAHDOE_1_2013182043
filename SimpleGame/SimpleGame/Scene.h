@@ -7,6 +7,8 @@
 class Scene
 {
 private:
+	int m_iGameState = GAMEPLAY;
+private:
 	Sound *m_sound = NULL;
 	int soundBG = 0;
 
@@ -43,8 +45,14 @@ private:
 	GLuint m_AnimationTexture;
 	GLuint m_AnimationTexture_NORTH;
 	GLuint m_SnowTexture;
-
-
+	GLuint m_PlayerArrowTexture;
+	GLuint m_ITEMSTATE_HPTexture;
+	GLuint m_ITEMSTATE_PowerUpTexture;
+	GLuint m_ITEMSTATE_ClearTexture;
+	GLuint m_MeteorTexture;
+	GLuint m_Object_NorthTexture;
+	GLuint m_GameOver;
+	GLuint m_GameWin;
 	GLuint m_ParticleTextureBullet;
 	int m_iAnimationFrameCnt = 0;
 	float m_iScene_ElapsedTime = 0;
@@ -55,13 +63,13 @@ public:
 	bool m_bCoolTimeOn = false;
 	Player * m_pObjects = NULL;
 	Player * m_pObjects_NORTH = NULL;
+	Player * m_pBossMonster = NULL;
 
 	Building * m_pBuilding = NULL;
 	Building * m_pBuilding_NORTH = NULL;
 
 	Renderer *g_Renderer = NULL;
 
-	Building * m_pBuildingNorth = NULL;
 	Building * m_pBuildingSouth = NULL;
 
 public:

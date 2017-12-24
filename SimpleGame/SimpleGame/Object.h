@@ -55,23 +55,26 @@ class Arrow : public Object //¾Æ±º
 public:
 	Arrow();
 	~Arrow();
+	int m_iItemstate = 0;
 };
 class Player : public Object
 {
 private:
 	float m_fShootTimer_Arrow;
+	float m_fShootTimer_Arrow_BOSMONSTER;
 	bool m_bShootState_Arrow;
-
+	bool m_bShootState_Arrow_BOSMONSTER;
 	
 public:
 	list<Arrow*>	m_listArrow;
+	list<Arrow*>	m_listBaseArrow;
 	int m_nArrow;
 public:
 	Player();
 	~Player();
 	void DamageAnimate();
-	void BulletShot();
-
+	void BulletShot(bool Player = false);
+	void BulletShot_BossMonster();
 	void ArrowShot();
 
 	void Update(DWORD elapsedTime);
